@@ -1,0 +1,76 @@
+erDiagram
+    direction LR
+    User {
+        string id PK
+        string name
+        string email
+        boolean emailVerified
+        dateTime createdAt
+        dateTime updatedAt
+    }
+    Session {
+        string userId FK
+    }
+    Account {
+        string userId FK
+    }
+    WorkoutPlan {
+        string id PK
+        string name
+        string userId FK
+        boolean isActive
+        dateTime createdAt
+        dateTime updatedAt
+    }
+    WorkoutDay {
+        string id PK
+        string workoutPlanId FK
+        string name
+        boolean isRestDay
+        enum weekDay
+        int estimatedDurationInSeconds
+        dateTime createdAt
+        dateTime updatedAt
+    }
+    UserWorkoutSession {
+        string id PK
+        string userId FK
+        string workoutDayId FK
+        dateTime startedAt
+        dateTime endedAt
+        dateTime createdAt
+        dateTime updatedAt
+    }
+
+    WorkoutExercise {
+        string id PK
+        int order
+        string workoutDayId FK
+        string name
+        int sets
+        int reps
+        int restTimeInSeconds
+        dateTime createdAt
+        dateTime updatedAt
+    }
+
+    UserWorkoutExerciseSession {
+        string id PK
+        string userWorkoutSessionId FK
+        string workoutExerciseId FK
+        dateTime completedAt
+        dateTime createdAt
+        dateTime updatedAt
+    }
+
+
+
+    User ||--o{ Session : has
+    User ||--o{ Account : has
+    User ||--o{ WorkoutPlan : creates
+    WorkoutPlan ||--o{ WorkoutDay : contains
+    WorkoutDay ||--o{ WorkoutExercise : contains
+    User ||--o{ UserWorkoutSession : has
+    WorkoutDay ||--o{ UserWorkoutSession : has
+    UserWorkoutSession ||--o{ UserWorkoutExerciseSession : has
+    WorkoutExercise ||--o{ UserWorkoutExerciseSession : has
