@@ -1,5 +1,8 @@
+import { fastifySwagger } from "@fastify/swagger";
+import fastifySwaggerUI from "@fastify/swagger-ui";
 import { fastify } from "fastify";
 import {
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
@@ -12,6 +15,28 @@ const app = fastify({
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+await app.register(fastifySwagger, {
+  openapi: {
+    info: {
+      title: "BooTrain API",
+      description:
+        "API documentation for BooTrain, a simple training platform.",
+      version: "1.0.0",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+        description: "Local development server",
+      },
+    ],
+  },
+  transform: jsonSchemaTransform,
+});
+
+await app.register(fastifySwaggerUI, {
+  routePrefix: "/docs",
+});
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
