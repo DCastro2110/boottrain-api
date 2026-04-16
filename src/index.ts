@@ -1,6 +1,6 @@
 import fastifyCors from "@fastify/cors";
 import { fastifySwagger } from "@fastify/swagger";
-import fastifySwaggerUI from "@fastify/swagger-ui";
+import fastifyApiReference from "@scalar/fastify-api-reference";
 import { fromNodeHeaders } from "better-auth/node";
 import { fastify } from "fastify";
 import {
@@ -43,8 +43,34 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform,
 });
 
-await app.register(fastifySwaggerUI, {
+await app.register(fastifyApiReference, {
   routePrefix: "/docs",
+  configuration: {
+    sources: [
+      {
+        title: "Authentication API",
+        url: "/api/auth/open-api/generate-schema",
+        slug: "auth-api",
+      },
+      {
+        title: "BooTrain API",
+        url: "/swagger.json",
+        slug: "bootrain-api",
+      },
+    ],
+  },
+});
+
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/swagger.json",
+  schema: {
+    hide: true,
+  },
+  handler: async (request, reply) => {
+    const openApiSpec = app.swagger();
+    reply.send(openApiSpec);
+  },
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
@@ -64,6 +90,9 @@ app.withTypeProvider<ZodTypeProvider>().route({
 
 app.route({
   method: ["GET", "POST"],
+  schema: {
+    hide: true,
+  },
   url: "/api/auth/*",
   async handler(request, reply) {
     try {
