@@ -1,5 +1,7 @@
+import fastifyCors from "@fastify/cors";
 import { fastifySwagger } from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
+import { fromNodeHeaders } from "better-auth/node";
 import { fastify } from "fastify";
 import {
   jsonSchemaTransform,
@@ -7,7 +9,10 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import { URL } from "url";
 import { z } from "zod";
+
+import { auth } from "./lib/auth.js";
 
 const app = fastify({
   logger: true,
@@ -16,6 +21,10 @@ const app = fastify({
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+await app.register(fastifyCors, {
+  origin: "http://localhost:3001",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+});
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -50,6 +59,36 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
   handler: async (request, reply) => {
     return { message: "Hello, World!" };
+  },
+});
+
+app.route({
+  method: ["GET", "POST"],
+  url: "/api/auth/*",
+  async handler(request, reply) {
+    try {
+      const url = new URL(request.url, `http://${request.headers.host}`);
+
+      const headers = fromNodeHeaders(request.headers);
+
+      const req = new Request(url.toString(), {
+        method: request.method,
+        headers,
+        ...(request.body ? { body: JSON.stringify(request.body) } : {}),
+      });
+
+      const response = await auth.handler(req);
+
+      reply.status(response.status);
+      response.headers.forEach((value, key) => reply.header(key, value));
+      reply.send(response.body ? await response.text() : null);
+    } catch (error) {
+      app.log.error(error);
+      reply.status(500).send({
+        error: "Internal authentication error",
+        code: "AUTH_FAILURE",
+      });
+    }
   },
 });
 
