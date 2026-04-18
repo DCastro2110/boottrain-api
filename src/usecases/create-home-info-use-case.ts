@@ -1,0 +1,38 @@
+import type {
+  HomeInfoDay,
+  HomeInfoDayStatus,
+} from "../schemas/home-info.schemas.js";
+
+interface InputDTO {
+  userId: string;
+}
+
+interface OutputDTO {
+  weekConsistency: {
+    day: HomeInfoDay;
+    status: HomeInfoDayStatus;
+  }[];
+  fireSequence: number;
+  todayWorkoutDay: {
+    date: string;
+    name: string;
+    estimatedDurationInSeconds: number;
+    numberOfExercises: number;
+    coverImageUrl: string | null;
+    isCompleted: boolean;
+  } | null;
+}
+
+export interface IHomeInfoRepository {
+  findByUserId(userId: string): Promise<OutputDTO>;
+}
+
+export class CreateHomeInfoUseCase {
+  constructor(private readonly homeInfoRepository: IHomeInfoRepository) {}
+
+  async execute(input: InputDTO): Promise<OutputDTO> {
+    return this.homeInfoRepository.findByUserId(input.userId);
+  }
+}
+
+export type { HomeInfoDay, HomeInfoDayStatus, InputDTO, OutputDTO };

@@ -10,6 +10,12 @@ const WeekConsistencyStatusSchema = z.enum([
   "missed",
 ]);
 
+export const HomeInfoDaySchema = WeekConsistencyDaySchema;
+export type HomeInfoDay = z.infer<typeof HomeInfoDaySchema>;
+
+export const HomeInfoDayStatusSchema = WeekConsistencyStatusSchema;
+export type HomeInfoDayStatus = z.infer<typeof HomeInfoDayStatusSchema>;
+
 const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 export const HomeInfoResponseSchema = z.object({
