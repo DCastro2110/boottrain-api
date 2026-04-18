@@ -6,6 +6,7 @@ import z from "zod";
 import { weekDays } from "../../generated/prisma/enums.js";
 import { auth } from "../lib/auth.js";
 import { WorkoutPlanRepository } from "../repositories/workout-plan-repository.js";
+import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
 
 export const workoutPlanRoutes = (app: FastifyInstance) => {
@@ -38,38 +39,44 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
         201: z.object({
           workoutPlanId: z.uuid(),
         }),
-        401: z.object({
-          error: z.string(),
-          code: z.string(),
-        }),
+        401: ErrorSchema,
+        500: ErrorSchema,
       },
     },
     handler: async (request, reply) => {
-      const { name, description, workoutDays } = request.body;
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(request.headers),
-      });
+      try {
+        const { name, description, workoutDays } = request.body;
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
 
-      if (!session) {
-        return reply.status(401).send({
-          error: "Unauthorized",
-          code: "UNAUTHORIZED",
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const workoutPlanRepository = new WorkoutPlanRepository();
+        const createWorkoutPlanUseCase = new CreateWorkoutPlanUseCase(
+          workoutPlanRepository,
+        );
+
+        const output = await createWorkoutPlanUseCase.execute({
+          userId: session.user.id,
+          name,
+          description,
+          workoutDays,
+        });
+
+        reply.status(201).send(output);
+      } catch (error) {
+        app.log.error(error);
+        reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
         });
       }
-
-      const workoutPlanRepository = new WorkoutPlanRepository();
-      const createWorkoutPlanUseCase = new CreateWorkoutPlanUseCase(
-        workoutPlanRepository,
-      );
-
-      const output = await createWorkoutPlanUseCase.execute({
-        userId: session.user.id,
-        name,
-        description,
-        workoutDays,
-      });
-
-      reply.status(201).send(output);
     },
   });
 };
