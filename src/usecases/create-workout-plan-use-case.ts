@@ -2,6 +2,7 @@ import type { DefaultArgs } from "@prisma/client/runtime/client";
 
 import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { weekDays } from "../../generated/prisma/enums.js";
+import type { IWorkoutPlan } from "../domain/workout-plan.js";
 import prisma from "../lib/db.js";
 
 interface InputDTO {
@@ -56,52 +57,8 @@ export interface IWorkoutPlanRepository {
   ): Promise<{
     id: string;
   }>;
-  findById(
-    id: string,
-    tx?: tx,
-  ): Promise<{
-    id: string;
-    name: string;
-    description: string;
-    workoutDays: {
-      id: string;
-      name: string;
-      isRestDay: boolean;
-      weekDay: weekDays;
-      estimatedDurationInSeconds: number;
-      workoutExercises: {
-        id: string;
-        name: string;
-        restTimeInSeconds: number;
-        order: number;
-        sets: number;
-        reps: number;
-      }[];
-    }[];
-  } | null>;
-  findTheActive(
-    userId: string,
-    tx?: tx,
-  ): Promise<{
-    id: string;
-    name: string;
-    description: string;
-    workoutDays: {
-      id: string;
-      name: string;
-      isRestDay: boolean;
-      weekDay: weekDays;
-      estimatedDurationInSeconds: number;
-      workoutExercises: {
-        id: string;
-        name: string;
-        restTimeInSeconds: number;
-        order: number;
-        sets: number;
-        reps: number;
-      }[];
-    }[];
-  } | null>;
+  findById(id: string, tx?: tx): Promise<IWorkoutPlan | null>;
+  findTheActive(userId: string, tx?: tx): Promise<IWorkoutPlan | null>;
   setInactive(id: string, tx?: tx): Promise<void>;
 }
 
