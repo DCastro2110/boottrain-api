@@ -1,9 +1,7 @@
-import type { DefaultArgs } from "@prisma/client/runtime/client";
-
-import type { PrismaClient } from "../../generated/prisma/client.js";
 import type { weekDays } from "../../generated/prisma/enums.js";
 import type { IWorkoutPlan } from "../domain/workout-plan.js";
 import prisma from "../lib/db.js";
+import type { tx } from "../types/utils.js";
 
 interface InputDTO {
   userId: string;
@@ -27,11 +25,6 @@ interface InputDTO {
 interface OutputDTO {
   workoutPlanId: string;
 }
-
-type tx = Omit<
-  PrismaClient<never, undefined, DefaultArgs>,
-  "$connect" | "$disconnect" | "$on" | "$use" | "$extends"
->;
 
 export interface IWorkoutPlanRepository {
   create(
@@ -69,7 +62,7 @@ export class CreateWorkoutPlanUseCase {
     const haveAnActiveWorkoutPlan =
       await this.workoutPlanRepository.findTheActive(input.userId);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: tx) => {
       if (haveAnActiveWorkoutPlan) {
         await this.workoutPlanRepository.setInactive(
           haveAnActiveWorkoutPlan.id,

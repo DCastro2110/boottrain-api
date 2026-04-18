@@ -1,13 +1,13 @@
 import prisma from "../lib/db.js";
+import type { tx } from "../types/utils.js";
 import type { IWorkoutPlanRepository } from "../usecases/create-workout-plan-use-case.js";
 
 type CreateData = Parameters<IWorkoutPlanRepository["create"]>[0];
-type Transaction = Parameters<IWorkoutPlanRepository["create"]>[1];
 
 export class WorkoutPlanRepository implements IWorkoutPlanRepository {
   private prismaClient = prisma;
 
-  async create(data: CreateData, tx?: Transaction) {
+  async create(data: CreateData, tx?: tx) {
     const client = tx ?? this.prismaClient;
 
     const newWorkoutPlan = await client.workoutPlan.create({
@@ -40,7 +40,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
     };
   }
 
-  async findTheActive(userId: string, tx?: Transaction) {
+  async findTheActive(userId: string, tx?: tx) {
     const client = tx ?? this.prismaClient;
 
     const activeWorkoutPlan = await client.workoutPlan.findFirst({
@@ -85,7 +85,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
     };
   }
 
-  async setInactive(id: string, tx?: Transaction) {
+  async setInactive(id: string, tx?: tx) {
     const client = tx ?? this.prismaClient;
 
     await client.workoutPlan.update({
@@ -98,7 +98,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
     });
   }
 
-  async findById(id: string, tx?: Transaction) {
+  async findById(id: string, tx?: tx) {
     const client = tx ?? this.prismaClient;
 
     const workoutPlan = await client.workoutPlan.findUnique({
