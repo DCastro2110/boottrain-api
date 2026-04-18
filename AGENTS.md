@@ -6,6 +6,15 @@
 - Runtime entrypoint: `src/index.ts`.
 - No CI workflows or test runner config found in this repo.
 
+## Tech Spec
+
+- Fastify for API server.
+- Zod for validation.
+- Prisma for DB ORM.
+- Better Auth for auth (with passthrough to external auth service).
+- Postgres as the database (with Docker Compose config).
+- dayjs for date handling.
+
 ## Required toolchain
 
 - Node `24` (see `package.json` engines).
