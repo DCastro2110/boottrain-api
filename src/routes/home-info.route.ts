@@ -3,21 +3,13 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
 import { auth } from "../lib/auth.js";
-import {
-  type HomeInfoResponse,
-  HomeInfoResponseSchema,
-} from "../schemas/home-info.schemas.js";
+import { HomeInfoRepository } from "../repositories/home-info-repository.js";
+import { HomeInfoResponseSchema } from "../schemas/home-info.schemas.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
+import { GetHomeInfoUseCase } from "../usecases/get-home-info-use-case.js";
 
-const placeholderWeekConsistency: HomeInfoResponse["weekConsistency"] = [
-  { day: "SUNDAY", status: "not_completed" },
-  { day: "MONDAY", status: "not_completed" },
-  { day: "TUESDAY", status: "not_completed" },
-  { day: "WEDNESDAY", status: "not_completed" },
-  { day: "THURSDAY", status: "not_completed" },
-  { day: "FRIDAY", status: "not_completed" },
-  { day: "SATURDAY", status: "not_completed" },
-];
+const homeInfoRepository = new HomeInfoRepository();
+const getHomeInfoUseCase = new GetHomeInfoUseCase(homeInfoRepository);
 
 export const homeInfoRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -43,11 +35,11 @@ export const homeInfoRoutes = (app: FastifyInstance) => {
           });
         }
 
-        return reply.status(200).send({
-          weekConsistency: placeholderWeekConsistency,
-          fireSequence: 0,
-          todayWorkoutDay: null,
+        const output = await getHomeInfoUseCase.execute({
+          userId: session.user.id,
         });
+
+        return reply.status(200).send(output);
       } catch (error) {
         app.log.error(error);
         return reply.status(500).send({

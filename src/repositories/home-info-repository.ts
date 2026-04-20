@@ -5,7 +5,7 @@ import type {
   IHomeInfoRepository,
   InputDTO,
   OutputDTO,
-} from "../usecases/create-home-info-use-case.js";
+} from "../usecases/get-home-info-use-case.js";
 
 const orderedWeekDays: HomeInfoDay[] = [
   "SUNDAY",
