@@ -24,14 +24,14 @@ interface OutputDTO {
 }
 
 export interface IHomeInfoRepository {
-  findByUserId(userId: string): Promise<OutputDTO>;
+  findByUserId(input: InputDTO): Promise<OutputDTO>;
 }
 
 export class CreateHomeInfoUseCase {
   constructor(private readonly homeInfoRepository: IHomeInfoRepository) {}
 
   async execute(input: InputDTO): Promise<OutputDTO> {
-    return this.homeInfoRepository.findByUserId(input.userId);
+    return this.homeInfoRepository.findByUserId(input);
   }
 }
 
