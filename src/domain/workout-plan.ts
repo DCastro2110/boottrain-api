@@ -4,6 +4,8 @@ export interface IWorkoutPlan {
   id: string;
   name: string;
   description: string;
+  userId: string;
+  isActive: boolean;
   workoutDays: {
     id: string;
     name: string;

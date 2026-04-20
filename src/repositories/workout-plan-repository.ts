@@ -65,6 +65,8 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       id: activeWorkoutPlan.id,
       name: activeWorkoutPlan.name,
       description: activeWorkoutPlan.description,
+      userId: activeWorkoutPlan.userId,
+      isActive: activeWorkoutPlan.isActive,
       workoutDays: activeWorkoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
@@ -122,6 +124,8 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       id: workoutPlan.id,
       name: workoutPlan.name,
       description: workoutPlan.description,
+      userId: workoutPlan.userId,
+      isActive: workoutPlan.isActive,
       workoutDays: workoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
