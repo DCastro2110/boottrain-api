@@ -114,6 +114,7 @@ export class HomeInfoRepository implements IHomeInfoRepository {
                 isRestDay: true,
                 weekDay: true,
                 estimatedDurationInSeconds: true,
+                coverImageUrl: true,
                 _count: {
                   select: {
                     workoutExercises: true,
@@ -228,7 +229,7 @@ export class HomeInfoRepository implements IHomeInfoRepository {
             estimatedDurationInSeconds:
               todayPlanWorkoutDay.estimatedDurationInSeconds,
             numberOfExercises: todayPlanWorkoutDay._count.workoutExercises,
-            coverImageUrl: null,
+            coverImageUrl: todayPlanWorkoutDay.coverImageUrl,
             isCompleted: isTodayWorkoutDayCompleted,
           }
         : null,
