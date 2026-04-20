@@ -42,3 +42,12 @@ export class InternalServerError extends Error {
     this.code = "INTERNAL_SERVER_ERROR";
   }
 }
+
+export class ConflictError extends Error {
+  code: string;
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+    this.code = "CONFLICT";
+  }
+}
