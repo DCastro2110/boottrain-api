@@ -104,4 +104,15 @@ export class WorkoutSessionRepository implements IWorkoutSessionRepository {
       completedAt: session.completedAt,
     };
   }
+
+  async completeSession(id: string, tx?: tx): Promise<{ id: string }> {
+    const client = tx ?? this.prismaClient;
+
+    const session = await client.workoutSession.update({
+      where: { id },
+      data: { completedAt: new Date() },
+    });
+
+    return { id: session.id };
+  }
 }
