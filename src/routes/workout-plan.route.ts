@@ -10,6 +10,7 @@ import { WorkoutSessionRepository } from "../repositories/workout-session-reposi
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CloseSessionUseCase } from "../usecases/close-session-use-case.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
+import { GetWorkoutPlanUseCase } from "../usecases/get-workout-plan-use-case.js";
 import { StartSessionUseCase } from "../usecases/start-session-use-case.js";
 
 export const workoutPlanRoutes = (app: FastifyInstance) => {
@@ -74,6 +75,104 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
 
         reply.status(201).send(output);
       } catch (error) {
+        app.log.error(error);
+        reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/:workoutPlanId",
+    schema: {
+      params: z.object({
+        workoutPlanId: z.string().uuid(),
+      }),
+      response: {
+        200: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          description: z.string(),
+          userId: z.string().uuid(),
+          isActive: z.boolean(),
+          workoutDays: z.array(
+            z.object({
+              id: z.string().uuid(),
+              name: z.string(),
+              isRestDay: z.boolean(),
+              weekDay: weekDays,
+              estimatedDurationInSeconds: z.number(),
+              workoutExercises: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  name: z.string(),
+                  restTimeInSeconds: z.number(),
+                  order: z.number(),
+                  sets: z.number(),
+                  reps: z.number(),
+                }),
+              ),
+            }),
+          ),
+        }),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { workoutPlanId } = request.params;
+
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const workoutPlanRepository = new WorkoutPlanRepository();
+        const getWorkoutPlanUseCase = new GetWorkoutPlanUseCase(
+          workoutPlanRepository,
+        );
+
+        const result = await getWorkoutPlanUseCase.execute({
+          userId: session.user.id,
+          workoutPlanId,
+        });
+
+        reply.status(200).send(result.workoutPlan);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "NOT_FOUND"
+        ) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
+          });
+        }
+
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "FORBIDDEN"
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         app.log.error(error);
         reply.status(500).send({
           error: "Internal Server Error",
