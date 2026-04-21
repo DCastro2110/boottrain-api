@@ -69,3 +69,12 @@
 - TypeScript is strict (`strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`).
 - Prefer `prisma/schema.prisma` as source of truth over `docs/database.mermaid` when they diverge.
 - If have doubt about any library, use Context7 MCP.
+
+## Nomenclature
+
+- The files and folders should be named following kebab-case.
+- Names:
+  - Routes: `<resource>.route.ts` (e.g. `workout-plan.route.ts`)
+  - Use cases: `<action>-use-case.ts` (e.g. `create-workout-plan-use-case.ts`)
+  - Repositories: `<resource>-repository.ts` (e.g. `workout-plan-repository.ts`)
+  - Tests: mirror the file structure of the code being tested, with `.test.ts` suffix (e.g. `routes/workout-plan.route.test.ts` for `routes/workout-plan.route.ts`)
