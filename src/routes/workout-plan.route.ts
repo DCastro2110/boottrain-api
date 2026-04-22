@@ -10,6 +10,7 @@ import { WorkoutSessionRepository } from "../repositories/workout-session-reposi
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CloseSessionUseCase } from "../usecases/close-session-use-case.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
+import { GetWorkoutDayUseCase } from "../usecases/get-workout-day-use-case.js";
 import { GetWorkoutPlanUseCase } from "../usecases/get-workout-plan-use-case.js";
 import { StartSessionUseCase } from "../usecases/start-session-use-case.js";
 
@@ -366,6 +367,100 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           return reply.status(400).send({
             error: error.message,
             code: "BAD_REQUEST",
+          });
+        }
+
+        app.log.error(error);
+        reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/:workoutPlanId/workout-days/:workoutDayId",
+    schema: {
+      params: z.object({
+        workoutPlanId: z.string().uuid(),
+        workoutDayId: z.string().uuid(),
+      }),
+      response: {
+        200: z.object({
+          weekDay: z.enum(weekDays),
+          name: z.string(),
+          estimatedDurationInSeconds: z.number(),
+          numberOfExercises: z.number(),
+          coverImageUrl: z.string().nullable(),
+          workoutSessionId: z.string().uuid().nullable(),
+          workoutExercises: z.array(
+            z.object({
+              name: z.string(),
+              reps: z.number(),
+              sets: z.number(),
+              description: z.string(),
+              estimatedDurationInSeconds: z.number(),
+            }),
+          ),
+        }),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const { workoutPlanId, workoutDayId } = request.params;
+
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const workoutPlanRepository = new WorkoutPlanRepository();
+        const workoutSessionRepository = new WorkoutSessionRepository();
+        const getWorkoutDayUseCase = new GetWorkoutDayUseCase(
+          workoutPlanRepository,
+          workoutSessionRepository,
+        );
+
+        const result = await getWorkoutDayUseCase.execute({
+          userId: session.user.id,
+          workoutPlanId,
+          workoutDayId,
+          userTimezone: (session as unknown as { timezone: string }).timezone,
+        });
+
+        reply.status(200).send(result);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "NOT_FOUND"
+        ) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
+          });
+        }
+
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "FORBIDDEN"
+        ) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
           });
         }
 
