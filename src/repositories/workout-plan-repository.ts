@@ -145,4 +145,55 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       })),
     };
   }
+
+  async findWorkoutDayById(
+    workoutPlanId: string,
+    workoutDayId: string,
+    tx?: tx,
+  ) {
+    const client = tx ?? this.prismaClient;
+
+    const workoutPlan = await client.workoutPlan.findUnique({
+      where: {
+        id: workoutPlanId,
+      },
+      include: {
+        workoutDays: {
+          where: {
+            id: workoutDayId,
+          },
+          include: {
+            workoutExercises: true,
+          },
+        },
+      },
+    });
+
+    if (!workoutPlan) {
+      return null;
+    }
+
+    const workoutDay = workoutPlan.workoutDays[0];
+
+    if (!workoutDay) {
+      return null;
+    }
+
+    return {
+      id: workoutDay.id,
+      name: workoutDay.name,
+      weekDay: workoutDay.weekDay,
+      estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
+      numberOfExercises: workoutDay.workoutExercises.length,
+      coverImageUrl: workoutDay.coverImageUrl,
+      workoutExercises: workoutDay.workoutExercises.map((workoutExercise) => ({
+        name: workoutExercise.name,
+        reps: workoutExercise.reps,
+        sets: workoutExercise.sets,
+        description: workoutExercise.description,
+        estimatedDurationInSeconds:
+          workoutExercise.estimatedDurationInSeconds ?? 0,
+      })),
+    };
+  }
 }

@@ -64,16 +64,18 @@ model WorkoutSession {
 }
 
 model WorkoutExercise {
-  id                String     @id @default(uuid())
-  workoutDayId      String
-  name              String
-  sets              Int
-  reps              Int
-  restTimeInSeconds Int
-  order             Int
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id])
+  id                        String     @id @default(uuid())
+  workoutDayId              String
+  name                      String
+  sets                      Int
+  reps                      Int
+  restTimeInSeconds         Int
+  order                     Int
+  description               String?
+  estimatedDurationInSeconds Int?
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+  workoutDay                WorkoutDay @relation(fields: [workoutDayId], references: [id])
 }
 
 model UserWorkoutExerciseSession {

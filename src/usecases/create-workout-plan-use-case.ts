@@ -53,6 +53,25 @@ export interface IWorkoutPlanRepository {
   findById(id: string, tx?: tx): Promise<IWorkoutPlan | null>;
   findTheActive(userId: string, tx?: tx): Promise<IWorkoutPlan | null>;
   setInactive(id: string, tx?: tx): Promise<void>;
+  findWorkoutDayById(
+    workoutPlanId: string,
+    workoutDayId: string,
+    tx?: tx,
+  ): Promise<{
+    id: string;
+    name: string;
+    weekDay: weekDays;
+    estimatedDurationInSeconds: number;
+    numberOfExercises: number;
+    coverImageUrl: string | null;
+    workoutExercises: Array<{
+      name: string;
+      reps: number;
+      sets: number;
+      description: string | null;
+      estimatedDurationInSeconds: number | null;
+    }>;
+  } | null>;
 }
 
 export class CreateWorkoutPlanUseCase {
