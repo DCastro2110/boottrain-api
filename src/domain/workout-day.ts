@@ -1,5 +1,5 @@
 import type { weekDays } from "../../generated/prisma/enums.js";
-import type { IWorkoutExercise } from "./workout-exercice.js";
+import type { IWorkoutExercise } from "./workout-exercise.js";
 
 export interface IWorkoutDay {
   id: string;
