@@ -2,8 +2,8 @@ import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
+import { HomeInfoRepository } from "../db/home-info-repository.js";
 import { auth } from "../lib/auth.js";
-import { HomeInfoRepository } from "../repositories/home-info-repository.js";
 import { HomeInfoResponseSchema } from "../schemas/home-info.schemas.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { GetHomeInfoUseCase } from "../usecases/get-home-info-use-case.js";
