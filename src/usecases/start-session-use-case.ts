@@ -16,6 +16,10 @@ export interface IWorkoutSessionRepository {
   ): Promise<IWorkoutSession | null>;
   findById(id: string): Promise<IWorkoutSession | null>;
   completeSession(id: string): Promise<{ id: string }>;
+  findOpenSessionInCurrentWeek(
+    workoutDayId: string,
+    userTimezone: string,
+  ): Promise<IWorkoutSession | null>;
 }
 
 interface InputDTO {

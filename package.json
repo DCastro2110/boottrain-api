@@ -39,10 +39,12 @@
     "@prisma/client": "^7.7.0",
     "@scalar/fastify-api-reference": "^1.52.2",
     "better-auth": "^1.6.5",
+    "dayjs": "^1.11.20",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
     "fastify-type-provider-zod": "^6.1.0",
     "pg": "^8.20.0",
+    "timezone": "^1.0.23",
     "zod": "^4.3.6"
   }
 }

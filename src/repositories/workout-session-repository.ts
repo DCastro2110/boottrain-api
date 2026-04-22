@@ -1,3 +1,10 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 import type { IWorkoutSession } from "../domain/workout-session.js";
 import prisma from "../lib/db.js";
 import type { tx } from "../types/utils.js";
@@ -114,5 +121,40 @@ export class WorkoutSessionRepository implements IWorkoutSessionRepository {
     });
 
     return { id: session.id };
+  }
+
+  async findOpenSessionInCurrentWeek(
+    workoutDayId: string,
+    userTimezone: string,
+    tx?: tx,
+  ): Promise<IWorkoutSession | null> {
+    const client = tx ?? this.prismaClient;
+
+    // Calculate week boundaries in user's timezone (week starts on Sunday)
+    const startOfWeek = dayjs().tz(userTimezone).startOf("week").toDate();
+    const endOfWeek = dayjs().tz(userTimezone).endOf("week").toDate();
+
+    const session = await client.workoutSession.findFirst({
+      where: {
+        workoutDayId,
+        startedAt: {
+          gte: startOfWeek,
+          lte: endOfWeek,
+        },
+        completedAt: null,
+      },
+    });
+
+    if (!session) {
+      return null;
+    }
+
+    return {
+      id: session.id,
+      userId: session.userId,
+      workoutDayId: session.workoutDayId,
+      startedAt: session.startedAt,
+      completedAt: session.completedAt,
+    };
   }
 }
