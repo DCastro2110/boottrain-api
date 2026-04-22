@@ -1,6 +1,6 @@
 import type { weekDays } from "../../generated/prisma/enums.js";
+import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
 import { ForbiddenError, NotFoundError } from "../errors/errors.js";
-import type { IWorkoutPlanRepository } from "./create-workout-plan-use-case.js";
 import type { IWorkoutSessionRepository } from "./start-session-use-case.js";
 
 interface InputDTO {

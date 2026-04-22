@@ -1,3 +1,4 @@
+import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
 import type { IWorkoutSession } from "../domain/workout-session.js";
 import {
   BadRequestError,
@@ -5,7 +6,6 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "../errors/errors.js";
-import type { IWorkoutPlanRepository } from "./create-workout-plan-use-case.js";
 
 export interface IWorkoutSessionRepository {
   startSession(workoutDayId: string, userId: string): Promise<{ id: string }>;

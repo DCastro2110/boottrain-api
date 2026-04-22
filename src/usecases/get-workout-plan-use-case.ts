@@ -1,5 +1,5 @@
+import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
 import { ForbiddenError, NotFoundError } from "../errors/errors.js";
-import type { IWorkoutPlanRepository } from "./create-workout-plan-use-case.js";
 
 interface InputDTO {
   userId: string;

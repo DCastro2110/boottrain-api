@@ -1,6 +1,6 @@
+import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
 import prisma from "../lib/db.js";
 import type { tx } from "../types/utils.js";
-import type { IWorkoutPlanRepository } from "../usecases/create-workout-plan-use-case.js";
 
 type CreateData = Parameters<IWorkoutPlanRepository["create"]>[0];
 
