@@ -4,9 +4,9 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { weekDays } from "../../generated/prisma/enums.js";
+import { WorkoutPlanRepository } from "../db/workout-plan-repository.js";
+import { WorkoutSessionRepository } from "../db/workout-session-repository.js";
 import { auth } from "../lib/auth.js";
-import { WorkoutPlanRepository } from "../repositories/workout-plan-repository.js";
-import { WorkoutSessionRepository } from "../repositories/workout-session-repository.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CloseSessionUseCase } from "../usecases/close-session-use-case.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
