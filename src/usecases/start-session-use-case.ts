@@ -1,26 +1,11 @@
 import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
-import type { IWorkoutSession } from "../domain/workout-session.js";
+import type { IWorkoutSessionRepository } from "../domain/workout-session.js";
 import {
   BadRequestError,
   ConflictError,
   ForbiddenError,
   NotFoundError,
 } from "../errors/errors.js";
-
-export interface IWorkoutSessionRepository {
-  startSession(workoutDayId: string, userId: string): Promise<{ id: string }>;
-  findByWorkoutDayId(workoutDayId: string): Promise<IWorkoutSession[]>;
-  findByWorkoutDayIdAndStartedAt(
-    workoutDayId: string,
-    date: Date,
-  ): Promise<IWorkoutSession | null>;
-  findById(id: string): Promise<IWorkoutSession | null>;
-  completeSession(id: string): Promise<{ id: string }>;
-  findOpenSessionInCurrentWeek(
-    workoutDayId: string,
-    userTimezone: string,
-  ): Promise<IWorkoutSession | null>;
-}
 
 interface InputDTO {
   userId: string;

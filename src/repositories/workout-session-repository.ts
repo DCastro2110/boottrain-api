@@ -5,10 +5,12 @@ import utc from "dayjs/plugin/utc.js";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import type { IWorkoutSession } from "../domain/workout-session.js";
+import type {
+  IWorkoutSession,
+  IWorkoutSessionRepository,
+} from "../domain/workout-session.js";
 import prisma from "../lib/db.js";
 import type { tx } from "../types/utils.js";
-import type { IWorkoutSessionRepository } from "../usecases/start-session-use-case.js";
 
 export class WorkoutSessionRepository implements IWorkoutSessionRepository {
   private prismaClient = prisma;
