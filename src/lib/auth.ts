@@ -12,5 +12,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  session: {
+    additionalFields: {
+      timezone: {
+        type: "string",
+        required: true,
+      },
+    },
+  },
   plugins: [openAPI()],
 });
