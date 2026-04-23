@@ -1,3 +1,5 @@
+import type { tx } from "../types/utils.js";
+
 export interface IWorkoutSession {
   id: string;
   userId: string;
@@ -19,4 +21,10 @@ export interface IWorkoutSessionRepository {
     workoutDayId: string,
     userTimezone: string,
   ): Promise<IWorkoutSession | null>;
+  findByUserIdAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    tx?: tx,
+  ): Promise<IWorkoutSession[]>;
 }

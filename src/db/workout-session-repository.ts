@@ -159,4 +159,34 @@ export class WorkoutSessionRepository implements IWorkoutSessionRepository {
       completedAt: session.completedAt,
     };
   }
+
+  async findByUserIdAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    tx?: tx,
+  ): Promise<IWorkoutSession[]> {
+    const client = tx ?? this.prismaClient;
+
+    const sessions = await client.workoutSession.findMany({
+      where: {
+        userId,
+        startedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: {
+        startedAt: "asc",
+      },
+    });
+
+    return sessions.map((session) => ({
+      id: session.id,
+      userId: session.userId,
+      workoutDayId: session.workoutDayId,
+      startedAt: session.startedAt,
+      completedAt: session.completedAt,
+    }));
+  }
 }
