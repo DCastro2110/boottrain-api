@@ -8,10 +8,11 @@ Add a new method `findByUserIdAndDateRange` to the existing `WorkoutSessionRepos
 
 **Acceptance Criteria:**
 
-- Method exists in `src/db/workout-session-repository.ts`
-- Method signature: `findByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date, tx?: tx): Promise<IWorkoutSession[]>`
-- Returns sessions where `startedAt` is within the date range (inclusive on both ends)
-- Sessions are sorted by `startedAt` ascending
+- [x] Method exists in `src/db/workout-session-repository.ts`
+- [x] Method signature: `findByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date, tx?: tx): Promise<IWorkoutSession[]>`
+- [x] Returns sessions where `startedAt` is within the date range (inclusive on both ends)
+- [x] Sessions are sorted by `startedAt` ascending
+- [x] Interface updated in `src/domain/workout-session.ts`
 
 ### 2. Create GetStats use case
 
@@ -19,13 +20,13 @@ Create `src/usecases/get-stats-use-case.ts` with input/output DTOs and business 
 
 **Acceptance Criteria:**
 
-- File exists at `src/usecases/get-stats-use-case.ts`
-- Exports `GetStatsUseCase` class
-- InputDTO and OutputDTO interfaces defined
-- Validates startDate is before endDate
-- Calculates total sessions, total duration, completion percent
-- Returns properly shaped OutputDTO
-- Uses existing `WorkoutSessionRepository` to fetch data
+- [x] File exists at `src/usecases/get-stats-use-case.ts`
+- [x] Exports `GetStatsUseCase` class
+- [x] InputDTO and OutputDTO interfaces defined
+- [x] Validates startDate is before endDate
+- [x] Calculates total sessions, total duration, completion percent
+- [x] Returns properly shaped OutputDTO
+- [x] Uses existing `WorkoutSessionRepository` to fetch data
 
 ### 3. Create stats route
 
@@ -33,12 +34,12 @@ Create `src/routes/stats.route.ts` with GET `/stats` endpoint.
 
 **Acceptance Criteria:**
 
-- File exists at `src/routes/stats.route.ts`
-- Route: `GET /stats?startDate=<>&endDate=<>`
-- Query params validated with Zod
-- Auth check returns 401 if no session
-- Returns 200 with stats on success
-- Error handling returns 400 for invalid dates
+- [x] File exists at `src/routes/stats.route.ts`
+- [x] Route: `GET /stats?startDate=<>&endDate=<>`
+- [x] Query params validated with Zod
+- [x] Auth check returns 401 if no session
+- [x] Returns 200 with stats on success
+- [x] Error handling returns 400 for invalid dates
 
 ### 4. Register route in index.ts
 
@@ -46,10 +47,10 @@ Add the stats route to the Fastify app in `src/index.ts`.
 
 **Acceptance Criteria:**
 
-- `stats.route.ts` is imported with `.js` extension
-- Route is registered with the app
-- Typecheck passes (`pnpm tsc --noEmit`)
-- Lint passes (`pnpm eslint .`)
+- [x] `stats.route.ts` is imported with `.js` extension
+- [x] Route is registered with the app
+- [x] Typecheck passes (`pnpm tsc --noEmit`)
+- [x] Lint passes (`pnpm eslint .`)
 
 ---
 
