@@ -66,15 +66,9 @@ Provides workout session statistics for a user within a specified date range. Th
 - Calls repository to fetch sessions
 - Calculates aggregates
 
-### Repository Layer (`src/db/stats-repository.ts`)
+### Repository Layer
 
-- Implements `IStatsRepository` interface (in `src/domain/stats.ts`)
-- Method: `findByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date, tx?: tx)`
-- Returns array of workout session records
-
-### Domain Interface (`src/domain/stats.ts`)
-
-- `IStatsRepository` interface with the repository contract
+The existing `WorkoutSessionRepository` will be extended with a new method `findByUserIdAndDateRange` to fetch sessions within a date range. No new repository class is needed.
 
 ## Data Models / API Contracts
 

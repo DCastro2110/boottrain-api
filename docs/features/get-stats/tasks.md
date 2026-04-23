@@ -2,30 +2,20 @@
 
 ## Subtask List
 
-### 1. Create domain interface for stats repository
+### 1. Add findByUserIdAndDateRange method to WorkoutSessionRepository
 
-Create `src/domain/stats.ts` with `IStatsRepository` interface defining the contract for fetching workout sessions by user and date range.
-
-**Acceptance Criteria:**
-
-- File exists at `src/domain/stats.ts`
-- Exports `IStatsRepository` interface
-- Interface includes `findByUserIdAndDateRange` method signature with proper types
-
-### 2. Create stats repository implementation
-
-Create `src/db/stats-repository.ts` implementing `IStatsRepository` with Prisma queries.
+Add a new method `findByUserIdAndDateRange` to the existing `WorkoutSessionRepository` class that fetches all workout sessions for a user within a date range.
 
 **Acceptance Criteria:**
 
-- File exists at `src/db/stats-repository.ts`
-- Implements `IStatsRepository`
-- Uses shared `tx` type for transaction support
-- Maps Prisma result to plain objects
+- Method exists in `src/db/workout-session-repository.ts`
+- Method signature: `findByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date, tx?: tx): Promise<IWorkoutSession[]>`
+- Returns sessions where `startedAt` is within the date range (inclusive on both ends)
+- Sessions are sorted by `startedAt` ascending
 
-### 3. Create GetStats use case
+### 2. Create GetStats use case
 
-Create `src/usecases/get-stats-use-case.ts` with input/output DTOs and business logic.
+Create `src/usecases/get-stats-use-case.ts` with input/output DTOs and business logic. This use case orchestrates the stats calculation using the existing `WorkoutSessionRepository`.
 
 **Acceptance Criteria:**
 
@@ -35,8 +25,9 @@ Create `src/usecases/get-stats-use-case.ts` with input/output DTOs and business 
 - Validates startDate is before endDate
 - Calculates total sessions, total duration, completion percent
 - Returns properly shaped OutputDTO
+- Uses existing `WorkoutSessionRepository` to fetch data
 
-### 4. Create stats route
+### 3. Create stats route
 
 Create `src/routes/stats.route.ts` with GET `/stats` endpoint.
 
@@ -49,7 +40,7 @@ Create `src/routes/stats.route.ts` with GET `/stats` endpoint.
 - Returns 200 with stats on success
 - Error handling returns 400 for invalid dates
 
-### 5. Register route in index.ts
+### 4. Register route in index.ts
 
 Add the stats route to the Fastify app in `src/index.ts`.
 
@@ -64,11 +55,10 @@ Add the stats route to the Fastify app in `src/index.ts`.
 
 ## Implementation Order
 
-1. **Subtask 1** - Domain interface (no dependencies)
-2. **Subtask 2** - Repository implementation (depends on 1)
-3. **Subtask 3** - Use case (depends on 2)
-4. **Subtask 4** - Route (depends on 3)
-5. **Subtask 5** - Route registration (depends on 4)
+1. **Subtask 1** - Add method to WorkoutSessionRepository (no new files)
+2. **Subtask 2** - GetStats use case (depends on 1)
+3. **Subtask 3** - Stats route (depends on 2)
+4. **Subtask 4** - Route registration (depends on 3)
 
 ## Critical Dependencies and Risks
 
