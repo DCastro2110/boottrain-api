@@ -14,7 +14,7 @@ export interface IUserData {
 
 export type UpdateUserDataInput = Omit<
   IUserData,
-  "id" | "email" | "name" | "image"
+  "id" | "email"
 >;
 
 export interface IUserRepository {
