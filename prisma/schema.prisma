@@ -8,17 +8,22 @@ datasource db {
 }
 
 model User {
-  id              String           @id
-  email           String           @unique
-  name            String?
-  createdAt       DateTime         @default(now())
-  emailVerified   Boolean          @default(false)
-  image           String?
-  updatedAt       DateTime         @updatedAt
-  workoutPlans    WorkoutPlan[]
-  workoutSessions WorkoutSession[]
-  accounts        Account[]
-  sessions        Session[]
+  id                String           @id
+  email             String           @unique
+  name              String?
+  height            Int?
+  weight            Int?
+  age               Int?
+  fitnessLevel      FitnessLevel?
+  bodyFatPercentage Int?
+  createdAt         DateTime         @default(now())
+  emailVerified     Boolean          @default(false)
+  image             String?
+  updatedAt         DateTime         @updatedAt
+  workoutPlans      WorkoutPlan[]
+  workoutSessions   WorkoutSession[]
+  accounts          Account[]
+  sessions          Session[]
 
   @@map("user")
 }
@@ -143,4 +148,10 @@ enum weekDays {
   THURSDAY
   FRIDAY
   SATURDAY
+}
+
+enum FitnessLevel {
+  beginner
+  intermediate
+  advanced
 }
