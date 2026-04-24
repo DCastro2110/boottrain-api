@@ -76,6 +76,7 @@ export interface IWorkoutPlanRepository {
   ): Promise<
     {
       id: string;
+      userId: string;
       name: string;
       description: string;
       isActive: boolean;

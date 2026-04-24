@@ -216,6 +216,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
     return workoutPlans.map((workoutPlan) => ({
       id: workoutPlan.id,
       name: workoutPlan.name,
+      userId: workoutPlan.userId,
       description: workoutPlan.description,
       isActive: workoutPlan.isActive,
       workoutDays: workoutPlan.workoutDays.map((workoutDay) => ({
