@@ -196,4 +196,45 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       })),
     };
   }
+
+  async getAllWorkoutPlansByUserId(userId: string, tx?: tx) {
+    const client = tx ?? this.prismaClient;
+
+    const workoutPlans = await client.workoutPlan.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        workoutDays: {
+          include: {
+            workoutExercises: true,
+          },
+        },
+      },
+    });
+
+    return workoutPlans.map((workoutPlan) => ({
+      id: workoutPlan.id,
+      name: workoutPlan.name,
+      description: workoutPlan.description,
+      isActive: workoutPlan.isActive,
+      workoutDays: workoutPlan.workoutDays.map((workoutDay) => ({
+        id: workoutDay.id,
+        name: workoutDay.name,
+        weekDay: workoutDay.weekDay,
+        estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
+        coverImageUrl: workoutDay.coverImageUrl,
+        workoutExercises: workoutDay.workoutExercises.map(
+          (workoutExercise) => ({
+            name: workoutExercise.name,
+            reps: workoutExercise.reps,
+            sets: workoutExercise.sets,
+            description: workoutExercise.description,
+            estimatedDurationInSeconds:
+              workoutExercise.estimatedDurationInSeconds ?? 0,
+          }),
+        ),
+      })),
+    }));
+  }
 }

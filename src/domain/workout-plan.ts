@@ -70,4 +70,29 @@ export interface IWorkoutPlanRepository {
       estimatedDurationInSeconds: number | null;
     }>;
   } | null>;
+  getAllWorkoutPlansByUserId(
+    userId: string,
+    tx?: tx,
+  ): Promise<
+    {
+      id: string;
+      name: string;
+      description: string;
+      isActive: boolean;
+      workoutDays: {
+        id: string;
+        name: string;
+        weekDay: weekDays;
+        estimatedDurationInSeconds: number;
+        coverImageUrl: string | null;
+        workoutExercises: {
+          name: string;
+          reps: number;
+          sets: number;
+          description: string | null;
+          estimatedDurationInSeconds: number | null;
+        }[];
+      }[];
+    }[]
+  >;
 }
