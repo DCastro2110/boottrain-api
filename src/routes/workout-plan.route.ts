@@ -6,10 +6,12 @@ import z from "zod";
 import { weekDays } from "../../generated/prisma/enums.js";
 import { WorkoutPlanRepository } from "../db/workout-plan-repository.js";
 import { WorkoutSessionRepository } from "../db/workout-session-repository.js";
+import { ForbiddenError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CloseSessionUseCase } from "../usecases/close-session-use-case.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
+import { GetAllWorkoutPlansUseCase } from "../usecases/get-all-workout-plans.use-case.js";
 import { GetWorkoutDayUseCase } from "../usecases/get-workout-day-use-case.js";
 import { GetWorkoutPlanUseCase } from "../usecases/get-workout-plan-use-case.js";
 import { StartSessionUseCase } from "../usecases/start-session-use-case.js";
@@ -183,6 +185,80 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
     },
   });
 
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/",
+    schema: {
+      response: {
+        200: z.array(
+          z.object({
+            id: z.string().uuid(),
+            userId: z.string().uuid(),
+            name: z.string(),
+            description: z.string(),
+            isActive: z.boolean(),
+            workoutDays: z.array(
+              z.object({
+                id: z.string().uuid(),
+                name: z.string(),
+                weekDay: weekDays,
+                estimatedDurationInSeconds: z.number(),
+                coverImageUrl: z.string().nullable(),
+                workoutExercises: z.array(
+                  z.object({
+                    name: z.string(),
+                    reps: z.number(),
+                    sets: z.number(),
+                    description: z.string().nullable(),
+                    estimatedDurationInSeconds: z.number().nullable(),
+                  }),
+                ),
+              }),
+            ),
+          }),
+        ),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const workoutPlanRepository = new WorkoutPlanRepository();
+        const getAllWorkoutPlansUseCase = new GetAllWorkoutPlansUseCase(
+          workoutPlanRepository,
+        );
+        const result = await getAllWorkoutPlansUseCase.execute(session.user.id);
+
+        reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
+        reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
     url: "/:workoutPlanId/workout-days/:workoutDayId/sessions",
