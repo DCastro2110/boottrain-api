@@ -3,13 +3,13 @@ import { NotFoundError } from "../errors/errors.js";
 
 interface InputDTO {
   userId: string;
-  name?: string | null;
-  height?: number | null;
-  weight?: number | null;
-  age?: number | null;
-  fitnessLevel?: FitnessLevel | null;
-  bodyFatPercentage?: number | null;
-  image?: string | null;
+  name?: string | null | undefined;
+  height?: number | null | undefined;
+  weight?: number | null | undefined;
+  age?: number | null | undefined;
+  fitnessLevel?: FitnessLevel | null | undefined;
+  bodyFatPercentage?: number | null | undefined;
+  image?: string | null | undefined;
 }
 
 interface OutputDTO {
