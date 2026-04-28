@@ -20,18 +20,36 @@ export interface IUpdateUserDataUseCase {
   execute(input: InputDTO): Promise<OutputDTO>;
 }
 
+const FIELDS: (keyof InputDTO)[] = [
+  "name",
+  "height",
+  "weight",
+  "age",
+  "fitnessLevel",
+  "bodyFatPercentage",
+  "image",
+];
+
 export class UpdateUserDataUseCase implements IUpdateUserDataUseCase {
   constructor(private userRepository: IUserRepository) {}
 
   async execute(input: InputDTO): Promise<OutputDTO> {
-    const hasDataToUpdate =
-      input.name !== undefined ||
-      input.height !== undefined ||
-      input.weight !== undefined ||
-      input.age !== undefined ||
-      input.fitnessLevel !== undefined ||
-      input.bodyFatPercentage !== undefined ||
-      input.image !== undefined;
+    let hasDataToUpdate = false;
+    const updateData: Partial<InputDTO> = { ...input };
+
+    for (const rawKey in Object.keys(input)) {
+      const key = rawKey as keyof InputDTO;
+      const value = input[key];
+      if (
+        !FIELDS.includes(key) ||
+        value === undefined ||
+        value === null ||
+        (typeof value === "string" ? value.trim() === "" : false)
+      ) {
+        hasDataToUpdate = true;
+        delete updateData[key];
+      }
+    }
 
     if (!hasDataToUpdate) {
       return { userId: input.userId };
@@ -42,17 +60,6 @@ export class UpdateUserDataUseCase implements IUpdateUserDataUseCase {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-
-    const updateData: any = {};
-    if (input.name !== undefined) updateData.name = input.name;
-    if (input.height !== undefined) updateData.height = input.height;
-    if (input.weight !== undefined) updateData.weight = input.weight;
-    if (input.age !== undefined) updateData.age = input.age;
-    if (input.fitnessLevel !== undefined)
-      updateData.fitnessLevel = input.fitnessLevel;
-    if (input.bodyFatPercentage !== undefined)
-      updateData.bodyFatPercentage = input.bodyFatPercentage;
-    if (input.image !== undefined) updateData.image = input.image;
 
     await this.userRepository.update(input.userId, updateData);
 
