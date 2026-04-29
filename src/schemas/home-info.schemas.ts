@@ -27,13 +27,13 @@ export const HomeInfoResponseSchema = z.object({
       }),
     )
     .length(7),
-  fireSequence: z.int().min(0),
+  fireSequence: z.number().min(0),
   todayWorkoutDay: z
     .object({
       date: IsoDateSchema,
       name: z.string(),
-      estimatedDurationInSeconds: z.int().min(0),
-      numberOfExercises: z.int().min(0),
+      estimatedDurationInSeconds: z.number().min(0),
+      numberOfExercises: z.number().min(0),
       coverImageUrl: z.string().nullable(),
       isCompleted: z.boolean(),
     })

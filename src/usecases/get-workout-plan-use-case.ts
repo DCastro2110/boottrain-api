@@ -1,3 +1,4 @@
+import { weekDays } from "../../generated/prisma/enums.js";
 import type { IWorkoutPlanRepository } from "../domain/workout-plan.js";
 import { ForbiddenError, NotFoundError } from "../errors/errors.js";
 
@@ -5,6 +6,8 @@ interface InputDTO {
   userId: string;
   workoutPlanId: string;
 }
+
+type WeekDay = (typeof weekDays)[keyof typeof weekDays];
 
 interface OutputDTO {
   workoutPlan: {
@@ -17,7 +20,7 @@ interface OutputDTO {
       id: string;
       name: string;
       isRestDay: boolean;
-      weekDay: string;
+      weekDay: WeekDay;
       estimatedDurationInSeconds: number;
       workoutExercises: Array<{
         id: string;
