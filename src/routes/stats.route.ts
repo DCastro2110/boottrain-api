@@ -26,7 +26,7 @@ export const statsRoutes = (app: FastifyInstance) => {
           completionPercent: z.number(),
           sessions: z.array(
             z.object({
-              sessionId: z.string().uuid(),
+              sessionId: z.uuid(),
               startedAt: z.date(),
               endedAt: z.date().nullable(),
             }),

@@ -36,7 +36,7 @@ const aiRoutes = (app: FastifyInstance) => {
                 z.object({
                   name: z.string().max(100),
                   isRestDay: z.boolean(),
-                  weekDay: z.enum(weekDays),
+                  weekDay: z.enum(Object.values(weekDays)),
                   estimatedDurationInSeconds: z.number().min(0),
                   workoutExercises: z.array(
                     z.object({

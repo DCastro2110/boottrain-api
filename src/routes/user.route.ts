@@ -2,12 +2,13 @@ import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
+
 import { UserRepository } from "../db/user-repository.js";
 import { NotFoundError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
+import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { GetUserDataUseCase } from "../usecases/get-user-data-use-case.js";
 import { UpdateUserDataUseCase } from "../usecases/update-user-data-use-case.js";
-import { ErrorSchema } from "../schemas/RouteSchemas.js";
 
 const fitnessLevelSchema = z.enum(["beginner", "intermediate", "advanced"]);
 
@@ -30,7 +31,7 @@ const updateUserBodySchema = z.object({
   age: z.number().min(0).max(120).optional(),
   fitnessLevel: fitnessLevelSchema.optional(),
   bodyFatPercentage: z.number().min(0).max(100).optional(),
-  image: z.string().url().optional(),
+  image: z.url().optional(),
 });
 
 export const userRoutes = async (app: FastifyInstance) => {

@@ -2,7 +2,7 @@ import z from "zod";
 
 import { weekDays } from "../../generated/prisma/enums.js";
 
-const WeekConsistencyDaySchema = z.enum(weekDays);
+const WeekConsistencyDaySchema = z.enum(Object.values(weekDays));
 
 const WeekConsistencyStatusSchema = z.enum([
   "completed",

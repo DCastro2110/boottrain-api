@@ -28,7 +28,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           z.object({
             name: z.string().max(100),
             isRestDay: z.boolean(),
-            weekDay: z.enum(weekDays),
+            weekDay: z.enum(Object.values(weekDays)),
             estimatedDurationInSeconds: z.number().min(0),
             workoutExercises: z.array(
               z.object({
@@ -106,7 +106,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
               id: z.string().uuid(),
               name: z.string(),
               isRestDay: z.boolean(),
-              weekDay: weekDays,
+              weekDay: z.enum(Object.values(weekDays)),
               estimatedDurationInSeconds: z.number(),
               workoutExercises: z.array(
                 z.object({
@@ -201,7 +201,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
               z.object({
                 id: z.string().uuid(),
                 name: z.string(),
-                weekDay: weekDays,
+                weekDay: z.enum(Object.values(weekDays)),
                 estimatedDurationInSeconds: z.number(),
                 coverImageUrl: z.string().nullable(),
                 workoutExercises: z.array(
@@ -465,7 +465,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
       }),
       response: {
         200: z.object({
-          weekDay: z.enum(weekDays),
+          weekDay: z.enum(Object.values(weekDays)),
           name: z.string(),
           estimatedDurationInSeconds: z.number(),
           numberOfExercises: z.number(),

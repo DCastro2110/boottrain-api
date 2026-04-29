@@ -7,8 +7,6 @@ interface InputDTO {
   workoutPlanId: string;
 }
 
-type WeekDay = (typeof weekDays)[keyof typeof weekDays];
-
 interface OutputDTO {
   workoutPlan: {
     id: string;
@@ -20,7 +18,7 @@ interface OutputDTO {
       id: string;
       name: string;
       isRestDay: boolean;
-      weekDay: WeekDay;
+      weekDay: weekDays;
       estimatedDurationInSeconds: number;
       workoutExercises: Array<{
         id: string;
