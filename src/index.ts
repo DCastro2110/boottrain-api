@@ -24,8 +24,9 @@ app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 await app.register(fastifyCors, {
-  origin: "http://localhost:3001",
+  origin: "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
 });
 await app.register(fastifySwagger, {
   openapi: {
