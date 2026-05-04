@@ -222,7 +222,7 @@ export class HomeInfoRepository implements IHomeInfoRepository {
     return {
       weekConsistency,
       fireSequence,
-      todayWorkoutDay: todayPlanWorkoutDay
+      todayWorkoutDay: todayPlanWorkoutDay && activeWorkoutPlan
         ? {
             date: todayDate,
             name: todayPlanWorkoutDay.name,
@@ -231,6 +231,8 @@ export class HomeInfoRepository implements IHomeInfoRepository {
             numberOfExercises: todayPlanWorkoutDay._count.workoutExercises,
             coverImageUrl: todayPlanWorkoutDay.coverImageUrl,
             isCompleted: isTodayWorkoutDayCompleted,
+            workoutPlanId: activeWorkoutPlan.id,
+            workoutDayId: todayPlanWorkoutDay.id,
           }
         : null,
     };

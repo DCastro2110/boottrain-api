@@ -36,6 +36,8 @@ export const HomeInfoResponseSchema = z.object({
       numberOfExercises: z.number().min(0),
       coverImageUrl: z.string().nullable(),
       isCompleted: z.boolean(),
+      workoutPlanId: z.string().uuid(),
+      workoutDayId: z.string().uuid(),
     })
     .nullable(),
 });

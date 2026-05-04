@@ -20,6 +20,8 @@ interface OutputDTO {
     numberOfExercises: number;
     coverImageUrl: string | null;
     isCompleted: boolean;
+    workoutPlanId: string;
+    workoutDayId: string;
   } | null;
 }
 
