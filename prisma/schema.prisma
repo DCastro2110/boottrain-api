@@ -102,6 +102,13 @@ model Session {
   userAgent String?
   userId    String
   timezone  String
+  name      String?
+  image     String?
+  age       Int?
+  height    Int?
+  weight    Int?
+  bodyFatPercentage Int?
+  fitnessLevel String?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

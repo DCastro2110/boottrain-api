@@ -26,6 +26,35 @@ export const auth = betterAuth({
       },
     },
   },
+  user: {
+    additionalFields: {
+      weight: {
+        type: "number",
+        required: false,
+        returned: true,
+      },
+      height: {
+        type: "number",
+        required: false,
+        returned: true,
+      },
+      age: {
+        type: "number",
+        required: false,
+        returned: true,
+      },
+      fitnessLevel: {
+        type: "string",
+        required: false,
+        returned: true,
+      },
+      bodyFatPercentage: {
+        type: "number",
+        required: false,
+        returned: true,
+      },
+    },
+  },
   databaseHooks: {
     session: {
       create: {
