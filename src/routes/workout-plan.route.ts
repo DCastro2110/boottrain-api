@@ -96,10 +96,9 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
       }),
       response: {
         200: z.object({
-          id: z.string().uuid(),
+          id: z.uuid(),
           name: z.string(),
           description: z.string(),
-          userId: z.string().uuid(),
           isActive: z.boolean(),
           workoutDays: z.array(
             z.object({
@@ -192,8 +191,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
       response: {
         200: z.array(
           z.object({
-            id: z.string().uuid(),
-            userId: z.string().uuid(),
+            id: z.uuid(),
             name: z.string(),
             description: z.string(),
             isActive: z.boolean(),
