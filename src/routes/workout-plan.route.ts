@@ -92,7 +92,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
     url: "/:workoutPlanId",
     schema: {
       params: z.object({
-        workoutPlanId: z.string().uuid(),
+        workoutPlanId: z.uuid(),
       }),
       response: {
         200: z.object({
@@ -102,14 +102,15 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           isActive: z.boolean(),
           workoutDays: z.array(
             z.object({
-              id: z.string().uuid(),
+              id: z.uuid(),
               name: z.string(),
               isRestDay: z.boolean(),
               weekDay: z.enum(Object.values(weekDays)),
+              coverImageUrl: z.string().nullable(),
               estimatedDurationInSeconds: z.number(),
               workoutExercises: z.array(
                 z.object({
-                  id: z.string().uuid(),
+                  id: z.uuid(),
                   name: z.string(),
                   restTimeInSeconds: z.number(),
                   order: z.number(),
@@ -469,15 +470,6 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           numberOfExercises: z.number(),
           coverImageUrl: z.string().nullable(),
           workoutSessionId: z.string().uuid().nullable(),
-          workoutExercises: z.array(
-            z.object({
-              name: z.string(),
-              reps: z.number(),
-              sets: z.number(),
-              description: z.string(),
-              estimatedDurationInSeconds: z.number(),
-            }),
-          ),
         }),
         401: ErrorSchema,
         403: ErrorSchema,

@@ -70,6 +70,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       workoutDays: activeWorkoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
+        coverImageUrl: workoutDay.coverImageUrl,
         isRestDay: workoutDay.isRestDay,
         weekDay: workoutDay.weekDay,
         estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
@@ -129,6 +130,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       workoutDays: workoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
+        coverImageUrl: workoutDay.coverImageUrl,
         isRestDay: workoutDay.isRestDay,
         weekDay: workoutDay.weekDay,
         estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,

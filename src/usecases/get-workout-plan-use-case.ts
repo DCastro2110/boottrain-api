@@ -18,6 +18,7 @@ interface OutputDTO {
       id: string;
       name: string;
       isRestDay: boolean;
+      coverImageUrl: string | null;
       weekDay: weekDays;
       estimatedDurationInSeconds: number;
       workoutExercises: Array<{
