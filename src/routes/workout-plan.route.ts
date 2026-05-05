@@ -469,7 +469,16 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           estimatedDurationInSeconds: z.number(),
           numberOfExercises: z.number(),
           coverImageUrl: z.string().nullable(),
-          workoutSessionId: z.string().uuid().nullable(),
+          workoutSessionId: z.string().nullable(),
+          workoutExercises: z.array(
+            z.object({
+              name: z.string(),
+              reps: z.number(),
+              sets: z.number(),
+              description: z.string(),
+              estimatedDurationInSeconds: z.number(),
+            }),
+          ),
         }),
         401: ErrorSchema,
         403: ErrorSchema,
