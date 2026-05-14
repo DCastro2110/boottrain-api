@@ -24,7 +24,7 @@ export function formatFastifyError(
   if (error instanceof ZodError) {
     return {
       status: 400,
-      error: "Validation Error",
+      error: error.message,
       code: "VALIDATION_ERROR",
       details: (error as unknown as { issues: z.core.$ZodIssue[] }).issues.map(
         (e) => ({
