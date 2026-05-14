@@ -17,7 +17,11 @@ import { UserRepository } from "../db/user-repository.js";
 import { WorkoutPlanRepository } from "../db/workout-plan-repository.js";
 import { ForbiddenError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
-import { redis } from "../lib/redis.js";
+import {
+  clearStreamActive,
+  isStreamActive,
+  setStreamActive,
+} from "../lib/redis.js";
 import { CreateWorkoutPlanUseCase } from "../usecases/create-workout-plan-use-case.js";
 import { GetUserDataUseCase } from "../usecases/get-user-data-use-case.js";
 import { UpdateUserDataUseCase } from "../usecases/update-user-data-use-case.js";
@@ -81,23 +85,6 @@ SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Escolha com base n
 
 Alterne entre as duas opções de cada categoria para variar. Dias de descanso usam imagem de superior.`;
 
-function addUserRequestToRedis(userId: string) {
-  const key = `stream:active:${userId}`;
-  const now = Date.now();
-  redis.set(key, now.toString(), "EX", "120");
-}
-
-function removeUserRequestFromRedis(userId: string) {
-  const key = `stream:active:${userId}`;
-  redis.del(key);
-}
-
-async function isUserRequestActive(userId: string): Promise<boolean> {
-  const key = `stream:active:${userId}`;
-  const doesKeyExist = await redis.exists(key);
-  return doesKeyExist === 1;
-}
-
 const aiRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
@@ -118,14 +105,17 @@ const aiRoutes = (app: FastifyInstance) => {
       }
 
       const userId = session.user.id;
-      if (await isUserRequestActive(userId)) {
+      if (await isStreamActive(userId).catch(() => false)) {
         return reply.status(409).send({
           error: "Another request is already being processed.",
           code: "STREAM_IN_PROGRESS",
         });
       }
 
-      addUserRequestToRedis(userId);
+      await setStreamActive(userId).catch(() => {
+        app.log.warn("Redis unavailable, proceeding without locking stream.");
+        return false;
+      });
 
       try {
         const result = streamText({
@@ -282,11 +272,11 @@ const aiRoutes = (app: FastifyInstance) => {
 
         const response = result.toUIMessageStreamResponse({
           onError: () => {
-            removeUserRequestFromRedis(userId);
+            clearStreamActive(userId).catch(console.error);
             return "Um erro ocorreu ao processar sua solicitação. Por favor, tente novamente.";
           },
           onFinish: () => {
-            removeUserRequestFromRedis(userId);
+            clearStreamActive(userId).catch(console.error);
           },
         });
 
@@ -297,7 +287,7 @@ const aiRoutes = (app: FastifyInstance) => {
 
         return reply.send(response);
       } catch (error) {
-        removeUserRequestFromRedis(userId);
+        clearStreamActive(userId).catch(console.error);
         console.error("Error in AI processing:", error);
         return reply.status(500).send({ error: "Internal Server Error" });
       }
