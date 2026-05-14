@@ -10,6 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/datas
+  redis:
+    image: redis:latest
+    container_name: bootrain-redis
+    command: redis-server --requirepass password
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres-data:
