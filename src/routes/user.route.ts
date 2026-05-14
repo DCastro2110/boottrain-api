@@ -13,7 +13,6 @@ import { UpdateUserDataUseCase } from "../usecases/update-user-data-use-case.js"
 const fitnessLevelSchema = z.enum(["beginner", "intermediate", "advanced"]);
 
 const userResponseSchema = z.object({
-  id: z.string(),
   email: z.string(),
   name: z.string().nullable(),
   height: z.number().nullable(),
@@ -40,7 +39,7 @@ export const userRoutes = async (app: FastifyInstance) => {
     url: "/:userId",
     schema: {
       params: z.object({
-        userId: z.string().uuid(),
+        userId: z.string(),
       }),
       response: {
         200: userResponseSchema,
