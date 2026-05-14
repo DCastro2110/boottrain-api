@@ -15,6 +15,7 @@ import {
 import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
+import { registerErrorHandler } from "./lib/error-handler.js";
 import { aiRoutes } from "./routes/ai.route.js";
 import { authRoutes } from "./routes/auth.route.js";
 import { homeInfoRoutes } from "./routes/home-info.route.js";
@@ -98,6 +99,8 @@ app.setNotFoundHandler(
     });
   },
 );
+
+registerErrorHandler(app);
 
 await app.register(authRoutes);
 await app.register(homeInfoRoutes, { prefix: "home-info" });
