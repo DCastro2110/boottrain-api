@@ -4,7 +4,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { UserRepository } from "../db/user-repository.js";
-import { NotFoundError } from "../errors/errors.js";
+import { ForbiddenError, UnauthorizedError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { GetUserDataUseCase } from "../usecases/get-user-data-use-case.js";
@@ -50,48 +50,27 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const { userId } = request.params;
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { userId } = request.params;
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
 
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
-        if (session.user.id !== userId) {
-          return reply.status(403).send({
-            error: "Forbidden",
-            code: "FORBIDDEN",
-          });
-        }
-
-        const userRepository = new UserRepository();
-        const getUserDataUseCase = new GetUserDataUseCase(userRepository);
-
-        const output = await getUserDataUseCase.execute({
-          userId,
-        });
-
-        return reply.status(200).send(output);
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.status(404).send({
-            error: error.message,
-            code: "NOT_FOUND",
-          });
-        }
-
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal Server Error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
+      if (!session) {
+        throw new UnauthorizedError("Unauthorized");
       }
+
+      if (session.user.id !== userId) {
+        throw new ForbiddenError("Forbidden");
+      }
+
+      const userRepository = new UserRepository();
+      const getUserDataUseCase = new GetUserDataUseCase(userRepository);
+
+      const output = await getUserDataUseCase.execute({
+        userId,
+      });
+
+      return reply.status(200).send(output);
     },
   });
 
@@ -114,49 +93,28 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const { userId } = request.params;
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { userId } = request.params;
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
 
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
-        if (session.user.id !== userId) {
-          return reply.status(403).send({
-            error: "Forbidden",
-            code: "FORBIDDEN",
-          });
-        }
-
-        const userRepository = new UserRepository();
-        const updateUserDataUseCase = new UpdateUserDataUseCase(userRepository);
-
-        const output = await updateUserDataUseCase.execute({
-          userId,
-          ...request.body,
-        });
-
-        return reply.status(200).send(output);
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.status(404).send({
-            error: error.message,
-            code: "NOT_FOUND",
-          });
-        }
-
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal Server Error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
+      if (!session) {
+        throw new UnauthorizedError("Unauthorized");
       }
+
+      if (session.user.id !== userId) {
+        throw new ForbiddenError("Forbidden");
+      }
+
+      const userRepository = new UserRepository();
+      const updateUserDataUseCase = new UpdateUserDataUseCase(userRepository);
+
+      const output = await updateUserDataUseCase.execute({
+        userId,
+        ...request.body,
+      });
+
+      return reply.status(200).send(output);
     },
   });
 };

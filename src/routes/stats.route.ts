@@ -4,6 +4,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { WorkoutSessionRepository } from "../db/workout-session-repository.js";
+import { UnauthorizedError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { GetStatsUseCase } from "../usecases/get-stats-use-case.js";
@@ -38,54 +39,32 @@ export const statsRoutes = (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const { startDate, endDate } = request.query;
+      const { startDate, endDate } = request.query;
 
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
 
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
-        const workoutSessionRepository = new WorkoutSessionRepository();
-        const getStatsUseCase = new GetStatsUseCase(workoutSessionRepository);
-
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-
-        const result = await getStatsUseCase.execute({
-          userId: session.user.id,
-          startDate: start,
-          endDate: end,
-        });
-
-        reply.status(200).send(result);
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          "code" in error &&
-          error.code === "BAD_REQUEST"
-        ) {
-          return reply.status(400).send({
-            error: error.message,
-            code: "BAD_REQUEST",
-          });
-        }
-
-        app.log.error(error);
-        reply.status(500).send({
-          error: "Internal Server Error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
+      if (!session) {
+        throw new UnauthorizedError("Unauthorized");
       }
+
+      const workoutSessionRepository = new WorkoutSessionRepository();
+      const getStatsUseCase = new GetStatsUseCase(workoutSessionRepository);
+
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      const result = await getStatsUseCase.execute({
+        userId: session.user.id,
+        startDate: start,
+        endDate: end,
+      });
+
+      reply.status(200).send(result);
     },
   });
 };

@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 
 import { HomeInfoRepository } from "../db/home-info-repository.js";
+import { UnauthorizedError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import { HomeInfoResponseSchema } from "../schemas/home-info.schemas.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
@@ -23,30 +24,19 @@ export const homeInfoRoutes = (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(request.headers),
+      });
 
-        if (!session) {
-          return reply.status(401).send({
-            error: "Unauthorized",
-            code: "UNAUTHORIZED",
-          });
-        }
-
-        const output = await getHomeInfoUseCase.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(output);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal Server Error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
+      if (!session) {
+        throw new UnauthorizedError("Unauthorized");
       }
+
+      const output = await getHomeInfoUseCase.execute({
+        userId: session.user.id,
+      });
+
+      return reply.status(200).send(output);
     },
   });
 };

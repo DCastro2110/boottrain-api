@@ -7,7 +7,6 @@ import {
   type UIMessage,
 } from "ai";
 import { fromNodeHeaders } from "better-auth/node";
-import console from "console";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
@@ -105,205 +104,185 @@ const aiRoutes = (app: FastifyInstance) => {
       }
 
       const userId = session.user.id;
-      if (await isStreamActive(userId).catch(() => false)) {
+      const isActive = await isStreamActive(userId).catch(() => false);
+      if (isActive) {
         throw new StreamInProgressError(
           "Another stream is already in progress for this user. Please wait until it finishes.",
         );
       }
 
-      await setStreamActive(userId).catch(() => {
-        app.log.warn("Redis unavailable, proceeding without locking stream.");
-        return false;
+      await setStreamActive(userId).catch((error) => {
+        app.log.warn("Redis unavailable, proceeding without locking stream:", error);
       });
 
-      try {
-        const result = streamText({
-          prompt: await convertToModelMessages(messages),
-          model: google("gemini-2.5-flash"),
-          providerOptions: {
-            google: {
-              structuredOutputs: false,
-            } satisfies GoogleLanguageModelOptions,
-          },
-          stopWhen: stepCountIs(5),
-          system: SYSTEM_PROMPT,
-          tools: {
-            createWorkoutPlan: tool({
-              description:
-                "Create a workout plan based on the user's goals and preferences.",
-              inputSchema: z.object({
-                name: z.string().max(100),
-                description: z.string().trim().min(1).max(200),
-                workoutDays: z.array(
-                  z.object({
-                    name: z.string().max(100),
-                    isRestDay: z.boolean(),
-                    weekDay: z.enum(Object.values(weekDays)),
-                    estimatedDurationInSeconds: z.number().min(0),
-                    workoutExercises: z.array(
-                      z.object({
-                        name: z.string().max(100),
-                        restTimeInSeconds: z.number().min(0),
-                        order: z.number().min(0),
-                        sets: z.number().min(0),
-                        reps: z.number().min(0),
-                      }),
-                    ),
-                  }),
-                ),
-              }),
-              execute: async (input) => {
-                const workoutPlanRepository = new WorkoutPlanRepository();
-                const createWorkoutPlanUseCase = new CreateWorkoutPlanUseCase(
-                  workoutPlanRepository,
-                );
+      const result = streamText({
+        prompt: await convertToModelMessages(messages),
+        model: google("gemini-2.5-flash"),
+        providerOptions: {
+          google: {
+            structuredOutputs: false,
+          } satisfies GoogleLanguageModelOptions,
+        },
+        stopWhen: stepCountIs(5),
+        system: SYSTEM_PROMPT,
+        tools: {
+          createWorkoutPlan: tool({
+            description:
+              "Create a workout plan based on the user's goals and preferences.",
+            inputSchema: z.object({
+              name: z.string().max(100),
+              description: z.string().trim().min(1).max(200),
+              workoutDays: z.array(
+                z.object({
+                  name: z.string().max(100),
+                  isRestDay: z.boolean(),
+                  weekDay: z.enum(Object.values(weekDays)),
+                  estimatedDurationInSeconds: z.number().min(0),
+                  workoutExercises: z.array(
+                    z.object({
+                      name: z.string().max(100),
+                      restTimeInSeconds: z.number().min(0),
+                      order: z.number().min(0),
+                      sets: z.number().min(0),
+                      reps: z.number().min(0),
+                    }),
+                  ),
+                }),
+              ),
+            }),
+            execute: async (input) => {
+              const workoutPlanRepository = new WorkoutPlanRepository();
+              const createWorkoutPlanUseCase = new CreateWorkoutPlanUseCase(
+                workoutPlanRepository,
+              );
 
-                await createWorkoutPlanUseCase.execute({
-                  userId: session.user.id,
-                  name: input.name,
-                  description: input.description,
-                  workoutDays: input.workoutDays.map((day) => ({
-                    name: day.name,
-                    isRestDay: day.isRestDay,
-                    weekDay: day.weekDay,
-                    estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-                    workoutExercises: day.workoutExercises.map((exercise) => ({
-                      name: exercise.name,
-                      restTimeInSeconds: exercise.restTimeInSeconds,
-                      order: exercise.order,
-                      sets: exercise.sets,
-                      reps: exercise.reps,
-                    })),
+              await createWorkoutPlanUseCase.execute({
+                userId: session.user.id,
+                name: input.name,
+                description: input.description,
+                workoutDays: input.workoutDays.map((day) => ({
+                  name: day.name,
+                  isRestDay: day.isRestDay,
+                  weekDay: day.weekDay,
+                  estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+                  workoutExercises: day.workoutExercises.map((exercise) => ({
+                    name: exercise.name,
+                    restTimeInSeconds: exercise.restTimeInSeconds,
+                    order: exercise.order,
+                    sets: exercise.sets,
+                    reps: exercise.reps,
                   })),
-                });
-              },
-            }),
-            getWorkoutPlans: tool({
-              description: "Get all workout plans of the user.",
-              inputSchema: z.object({}),
-              execute: async () => {
-                const workoutPlanRepository = new WorkoutPlanRepository();
-                const workoutPlans =
-                  await workoutPlanRepository.getAllWorkoutPlansByUserId(
-                    session.user.id,
-                  );
+                })),
+              });
+            },
+          }),
+          getWorkoutPlans: tool({
+            description: "Get all workout plans of the user.",
+            inputSchema: z.object({}),
+            execute: async () => {
+              const workoutPlanRepository = new WorkoutPlanRepository();
+              const workoutPlans =
+                await workoutPlanRepository.getAllWorkoutPlansByUserId(
+                  session.user.id,
+                );
 
-                return workoutPlans.map((plan) => ({
-                  id: plan.id,
-                  name: plan.name,
-                  description: plan.description,
-                  workoutDays: plan.workoutDays.map((day) => ({
-                    id: day.id,
-                    name: day.name,
-                    weekDay: day.weekDay,
-                    estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-                    workoutExercises: day.workoutExercises.map((exercise) => ({
-                      name: exercise.name,
-                      sets: exercise.sets,
-                      reps: exercise.reps,
-                    })),
+              return workoutPlans.map((plan) => ({
+                id: plan.id,
+                name: plan.name,
+                description: plan.description,
+                workoutDays: plan.workoutDays.map((day) => ({
+                  id: day.id,
+                  name: day.name,
+                  weekDay: day.weekDay,
+                  estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+                  workoutExercises: day.workoutExercises.map((exercise) => ({
+                    name: exercise.name,
+                    sets: exercise.sets,
+                    reps: exercise.reps,
                   })),
-                }));
-              },
+                })),
+              }));
+            },
+          }),
+          getUserData: tool({
+            description: "Get user data.",
+            inputSchema: z.object({}),
+            execute: async () => {
+              const userRepsoitory = new UserRepository();
+              const getUserDataUseCase = new GetUserDataUseCase(
+                userRepsoitory,
+              );
+
+              const userData = await getUserDataUseCase.execute({
+                userId: session.user.id,
+              });
+
+              return {
+                id: userData.id,
+                email: userData.email,
+                name: userData.name,
+                height: userData.height,
+                weight: userData.weight,
+                age: userData.age,
+                fitnessLevel: userData.fitnessLevel,
+                bodyFatPercentage: userData.bodyFatPercentage,
+                image: userData.image,
+              };
+            },
+          }),
+          updateUserData: tool({
+            description: "Update user data.",
+            inputSchema: z.object({
+              name: z.string().max(100).optional(),
+              height: z.number().min(0).optional(),
+              weight: z.number().min(0).optional(),
+              age: z.number().min(0).optional(),
+              fitnessLevel: z
+                .enum(["beginner", "intermediate", "advanced"])
+                .optional(),
+              bodyFatPercentage: z.number().min(0).max(100).optional(),
+              image: z.url().optional(),
             }),
-            getUserData: tool({
-              description: "Get user data.",
-              inputSchema: z.object({}),
-              execute: async () => {
-                const userRepsoitory = new UserRepository();
-                const getUserDataUseCase = new GetUserDataUseCase(
-                  userRepsoitory,
-                );
+            execute: async (input) => {
+              const userRepsoitory = new UserRepository();
+              const updateUserDataUseCase = new UpdateUserDataUseCase(
+                userRepsoitory,
+              );
 
-                const userData = await getUserDataUseCase.execute({
-                  userId: session.user.id,
-                });
+              await updateUserDataUseCase.execute({
+                userId: session.user.id,
+                name: input.name,
+                height: input.height,
+                weight: input.weight,
+                age: input.age,
+                fitnessLevel: input.fitnessLevel,
+                bodyFatPercentage: input.bodyFatPercentage,
+                image: input.image,
+              });
+            },
+          }),
+        },
+        onError: (error: unknown) => {
+          app.log.error({ err: error }, "Error in AI tool execution");
+        },
+      });
 
-                return {
-                  id: userData.id,
-                  email: userData.email,
-                  name: userData.name,
-                  height: userData.height,
-                  weight: userData.weight,
-                  age: userData.age,
-                  fitnessLevel: userData.fitnessLevel,
-                  bodyFatPercentage: userData.bodyFatPercentage,
-                  image: userData.image,
-                };
-              },
-            }),
-            updateUserData: tool({
-              description: "Update user data.",
-              inputSchema: z.object({
-                name: z.string().max(100).optional(),
-                height: z.number().min(0).optional(),
-                weight: z.number().min(0).optional(),
-                age: z.number().min(0).optional(),
-                fitnessLevel: z
-                  .enum(["beginner", "intermediate", "advanced"])
-                  .optional(),
-                bodyFatPercentage: z.number().min(0).max(100).optional(),
-                image: z.url().optional(),
-              }),
-              execute: async (input) => {
-                const userRepsoitory = new UserRepository();
-                const updateUserDataUseCase = new UpdateUserDataUseCase(
-                  userRepsoitory,
-                );
-
-                await updateUserDataUseCase.execute({
-                  userId: session.user.id,
-                  name: input.name,
-                  height: input.height,
-                  weight: input.weight,
-                  age: input.age,
-                  fitnessLevel: input.fitnessLevel,
-                  bodyFatPercentage: input.bodyFatPercentage,
-                  image: input.image,
-                });
-              },
-            }),
-          },
-          onError: (error: unknown) => {
-            console.error("Error in tool execution:", error);
-          },
-        });
-
-        const response = result.toUIMessageStreamResponse({
-          onError: () => {
-            clearStreamActive(userId).catch(console.error);
-            return "Um erro ocorreu ao processar sua solicitação. Por favor, tente novamente.";
-          },
-          onFinish: () => {
-            clearStreamActive(userId).catch(console.error);
-          },
-        });
-
-        reply.status(response.status);
-        response.headers.forEach((value, key) => {
-          reply.header(key, value);
-        });
-
-        return reply.send(response);
-      } catch (error) {
-        if (error instanceof StreamInProgressError) {
+      const response = result.toUIMessageStreamResponse({
+        onError: () => {
           clearStreamActive(userId).catch(console.error);
+          return "Um erro ocorreu ao processar sua solicitação. Por favor, tente novamente.";
+        },
+        onFinish: () => {
+          clearStreamActive(userId).catch(console.error);
+        },
+      });
 
-          return reply.status(409).send({
-            error: error.message,
-            code: "STREAM_IN_PROGRESS",
-          });
-        }
+      reply.status(response.status);
+      response.headers.forEach((value, key) => {
+        reply.header(key, value);
+      });
 
-        if (error instanceof ForbiddenError) {
-          return reply.status(403).send({
-            error: error.message,
-            code: "FORBIDDEN",
-          });
-        }
-
-        return reply.status(500).send({ error: "Internal Server Error" });
-      }
+      return reply.send(response);
     },
   });
 };
