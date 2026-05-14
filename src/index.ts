@@ -1,6 +1,10 @@
+import { error } from "node:console";
+
 import fastifyCors from "@fastify/cors";
+import fastifyRateLimit from "@fastify/rate-limit";
 import { fastifySwagger } from "@fastify/swagger";
 import fastifyApiReference from "@scalar/fastify-api-reference";
+import { fromNodeHeaders } from "better-auth/node";
 import { fastify } from "fastify";
 import {
   jsonSchemaTransform,
@@ -10,6 +14,8 @@ import {
 } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+import { auth } from "./lib/auth.js";
+import { aiRoutes } from "./routes/ai.route.js";
 import { authRoutes } from "./routes/auth.route.js";
 import { homeInfoRoutes } from "./routes/home-info.route.js";
 import { statsRoutes } from "./routes/stats.route.js";
@@ -22,6 +28,20 @@ const app = fastify({
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+await app.register(fastifyRateLimit, {
+  max: 60,
+  timeWindow: "1 minute",
+  ban: 3,
+  onBanReach(req, key) {
+    error(`IP ${key} has been banned for exceeding the rate limit.`);
+    const headers = fromNodeHeaders(req.headers);
+
+    auth.api.revokeSessions({ headers: headers }).catch((err) => {
+      error(`Failed to revoke sessions for IP ${key}:`, err);
+    });
+  },
+});
 
 await app.register(fastifyCors, {
   origin: "http://localhost:3000",
@@ -64,11 +84,27 @@ await app.register(fastifyApiReference, {
   },
 });
 
+app.setNotFoundHandler(
+  {
+    preHandler: app.rateLimit({
+      max: 4,
+      timeWindow: "1 minute",
+    }),
+  },
+  function (request, reply) {
+    reply.code(404).send({
+      error: "Not Found",
+      code: "NOT_FOUND",
+    });
+  },
+);
+
 await app.register(authRoutes);
 await app.register(homeInfoRoutes, { prefix: "home-info" });
 await app.register(statsRoutes, { prefix: "stats" });
 await app.register(userRoutes, { prefix: "users" });
 await app.register(workoutPlanRoutes, { prefix: "workout-plan" });
+await app.register(aiRoutes, { prefix: "ai" });
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
