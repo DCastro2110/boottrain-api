@@ -51,3 +51,21 @@ export class ConflictError extends Error {
     this.code = "CONFLICT";
   }
 }
+
+export class StreamInProgressError extends Error {
+  code: string;
+  constructor(message: string) {
+    super(message);
+    this.name = "StreamInProgressError";
+    this.code = "STREAM_IN_PROGRESS";
+  }
+}
+
+export class RedisError extends Error {
+  code: string;
+  constructor(message: string) {
+    super(message);
+    this.name = "RedisError";
+    this.code = "REDIS_ERROR";
+  }
+}

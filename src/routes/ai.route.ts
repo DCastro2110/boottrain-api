@@ -15,7 +15,7 @@ import z from "zod";
 import { weekDays } from "../../generated/prisma/enums.js";
 import { UserRepository } from "../db/user-repository.js";
 import { WorkoutPlanRepository } from "../db/workout-plan-repository.js";
-import { ForbiddenError } from "../errors/errors.js";
+import { ForbiddenError, StreamInProgressError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import {
   clearStreamActive,
@@ -106,10 +106,9 @@ const aiRoutes = (app: FastifyInstance) => {
 
       const userId = session.user.id;
       if (await isStreamActive(userId).catch(() => false)) {
-        return reply.status(409).send({
-          error: "Another request is already being processed.",
-          code: "STREAM_IN_PROGRESS",
-        });
+        throw new StreamInProgressError(
+          "Another stream is already in progress for this user. Please wait until it finishes.",
+        );
       }
 
       await setStreamActive(userId).catch(() => {
@@ -287,8 +286,22 @@ const aiRoutes = (app: FastifyInstance) => {
 
         return reply.send(response);
       } catch (error) {
-        clearStreamActive(userId).catch(console.error);
-        console.error("Error in AI processing:", error);
+        if (error instanceof StreamInProgressError) {
+          clearStreamActive(userId).catch(console.error);
+
+          return reply.status(409).send({
+            error: error.message,
+            code: "STREAM_IN_PROGRESS",
+          });
+        }
+
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({
+            error: error.message,
+            code: "FORBIDDEN",
+          });
+        }
+
         return reply.status(500).send({ error: "Internal Server Error" });
       }
     },
