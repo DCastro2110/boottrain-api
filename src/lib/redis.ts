@@ -2,16 +2,35 @@ import { Redis } from "ioredis";
 
 import { RedisError } from "../errors/errors.js";
 
-export const redis = new Redis(process.env.REDIS_URL!);
+let redisInstance: Redis | null = null;
 
-redis.on("error", (error) => {
-  console.error("🚨 [ioredis] conection error:", error.message);
-});
+// Função para obter a instância única (Singleton)
+export function getRedisClient(): Redis {
+  if (!redisInstance) {
+    redisInstance = new Redis(process.env.REDIS_URL!, {
+      retryStrategy(times) {
+        return Math.min(times * 50, 2000);
+      },
+      maxRetriesPerRequest: null,
+    });
 
-redis.on("connect", () => {
-  console.log("🔌 [ioredis] Connected to Redis");
-});
+    redisInstance.on("error", (error) => {
+      console.error("🚨 [ioredis] Erro na conexão:", error.message);
+    });
 
+    redisInstance.on("connect", () => {
+      console.log(
+        "🔌 [ioredis] Uma única conexão com o Redis foi estabelecida.",
+      );
+    });
+  }
+
+  return redisInstance;
+}
+
+// Para manter compatibilidade com seu código antigo, exportamos o getter como 'redis'
+// Mas agora encapsulado para evitar múltiplas criações
+export const redis = getRedisClient();
 export const REDIS_KEYS = {
   AI_STREAM_ACTIVE: "stream:active",
 } as const;
