@@ -28,9 +28,6 @@ export function getRedisClient(): Redis {
   return redisInstance;
 }
 
-// Para manter compatibilidade com seu código antigo, exportamos o getter como 'redis'
-// Mas agora encapsulado para evitar múltiplas criações
-export const redis = getRedisClient();
 export const REDIS_KEYS = {
   AI_STREAM_ACTIVE: "stream:active",
 } as const;
@@ -42,7 +39,11 @@ export const REDIS_TTL = {
 
 export async function setStreamActive(userId: string): Promise<void> {
   try {
-    await redis.set(
+    if (!(redisInstance instanceof Redis)) {
+      throw new RedisError("Failed to connect to Redis");
+    }
+
+    await redisInstance.set(
       `${REDIS_KEYS.AI_STREAM_ACTIVE}:${userId}`,
       "1",
       "EX",
@@ -54,16 +55,26 @@ export async function setStreamActive(userId: string): Promise<void> {
 }
 
 export async function clearStreamActive(userId: string): Promise<void> {
+  if (!(redisInstance instanceof Redis)) {
+    throw new RedisError("Failed to connect to Redis");
+  }
+
   try {
-    await redis.del(`${REDIS_KEYS.AI_STREAM_ACTIVE}:${userId}`);
+    await redisInstance.del(`${REDIS_KEYS.AI_STREAM_ACTIVE}:${userId}`);
   } catch {
     throw new RedisError("Failed to clear stream active in Redis");
   }
 }
 
 export async function isStreamActive(userId: string): Promise<boolean> {
+  if (!(redisInstance instanceof Redis)) {
+    throw new RedisError("Failed to connect to Redis");
+  }
+
   try {
-    const result = await redis.get(`${REDIS_KEYS.AI_STREAM_ACTIVE}:${userId}`);
+    const result = await redisInstance.get(
+      `${REDIS_KEYS.AI_STREAM_ACTIVE}:${userId}`,
+    );
     return result === "1";
   } catch {
     throw new RedisError("Failed to check stream active in Redis");

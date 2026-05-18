@@ -12,11 +12,12 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import { Redis } from "ioredis";
 import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
 import { registerErrorHandler } from "./lib/error-handler.js";
-import { redis } from "./lib/redis.js";
+import { getRedisClient } from "./lib/redis.js";
 import { aiRoutes } from "./routes/ai.route.js";
 import { authRoutes } from "./routes/auth.route.js";
 import { homeInfoRoutes } from "./routes/home-info.route.js";
@@ -24,6 +25,7 @@ import { statsRoutes } from "./routes/stats.route.js";
 import { userRoutes } from "./routes/user.route.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.route.js";
 
+let redisInstance: Redis | null = null;
 const app = fastify({
   logger: true,
 });
@@ -138,7 +140,15 @@ app.withTypeProvider<ZodTypeProvider>().route({
 });
 
 app.addHook("onClose", async () => {
-  await redis.quit();
+  await redisInstance?.quit();
+});
+app.addHook("onReady", async () => {
+  if (redisInstance) {
+    console.log("Redis connection already established.");
+    return;
+  }
+
+  redisInstance = getRedisClient();
 });
 
 try {
