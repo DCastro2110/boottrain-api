@@ -6,9 +6,7 @@ import z from "zod";
 import { weekDays } from "../../generated/prisma/enums.js";
 import { WorkoutPlanRepository } from "../db/workout-plan-repository.js";
 import { WorkoutSessionRepository } from "../db/workout-session-repository.js";
-import {
-  UnauthorizedError,
-} from "../errors/errors.js";
+import { UnauthorizedError } from "../errors/errors.js";
 import { auth } from "../lib/auth.js";
 import { ErrorSchema } from "../schemas/RouteSchemas.js";
 import { CloseSessionUseCase } from "../usecases/close-session-use-case.js";
@@ -31,6 +29,9 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
             name: z.string().max(100),
             isRestDay: z.boolean(),
             weekDay: z.enum(Object.values(weekDays)),
+            coverImageUrl: z
+              .string()
+              .min(1, "coverImageUrl must never be null or empty"),
             estimatedDurationInSeconds: z.number().min(0),
             workoutExercises: z.array(
               z.object({
@@ -311,6 +312,7 @@ export const workoutPlanRoutes = (app: FastifyInstance) => {
           numberOfExercises: z.number(),
           coverImageUrl: z.string().nullable(),
           workoutSessionId: z.string().nullable(),
+          isCompleted: z.boolean(),
           workoutExercises: z.array(
             z.object({
               name: z.string(),

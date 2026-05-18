@@ -6,6 +6,7 @@ export interface IWorkoutDay {
   name: string;
   isRestDay: boolean;
   weekDay: weekDays;
+  coverImageUrl: string;
   estimatedDurationInSeconds: number;
   workoutExercises: IWorkoutExercise[];
 }

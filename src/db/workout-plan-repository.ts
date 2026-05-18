@@ -20,6 +20,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
             name: workoutDay.name,
             isRestDay: workoutDay.isRestDay,
             weekDay: workoutDay.weekDay,
+            coverImageUrl: workoutDay.coverImageUrl,
             estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
             workoutExercises: {
               create: workoutDay.workoutExercises.map((workoutExercise) => ({
@@ -70,7 +71,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       workoutDays: activeWorkoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
-        coverImageUrl: workoutDay.coverImageUrl,
+        coverImageUrl: workoutDay.coverImageUrl ?? "",
         isRestDay: workoutDay.isRestDay,
         weekDay: workoutDay.weekDay,
         estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
@@ -130,7 +131,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       workoutDays: workoutPlan.workoutDays.map((workoutDay) => ({
         id: workoutDay.id,
         name: workoutDay.name,
-        coverImageUrl: workoutDay.coverImageUrl,
+        coverImageUrl: workoutDay.coverImageUrl ?? "",
         isRestDay: workoutDay.isRestDay,
         weekDay: workoutDay.weekDay,
         estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
@@ -187,7 +188,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
       weekDay: workoutDay.weekDay,
       estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
       numberOfExercises: workoutDay.workoutExercises.length,
-      coverImageUrl: workoutDay.coverImageUrl,
+      coverImageUrl: workoutDay.coverImageUrl ?? "",
       workoutExercises: workoutDay.workoutExercises.map((workoutExercise) => ({
         name: workoutExercise.name,
         reps: workoutExercise.reps,
@@ -226,7 +227,7 @@ export class WorkoutPlanRepository implements IWorkoutPlanRepository {
         name: workoutDay.name,
         weekDay: workoutDay.weekDay,
         estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
-        coverImageUrl: workoutDay.coverImageUrl,
+        coverImageUrl: workoutDay.coverImageUrl ?? "",
         workoutExercises: workoutDay.workoutExercises.map(
           (workoutExercise) => ({
             name: workoutExercise.name,

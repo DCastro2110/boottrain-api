@@ -72,17 +72,14 @@ Escolha a divisão adequada com base nos dias disponíveis:
 
 ### Imagens de Capa (coverImageUrl)
 
-SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Escolha com base no foco muscular:
+SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Use as imagens centralizadas de DEFAULT_WORKOUT_IMAGES:
 
-**Dias majoritariamente superiores** (peito, costas, ombros, bíceps, tríceps, push, pull, upper, full body):
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOW3fJmqZe4yoUcwvRPQa8kmFprzNiC30hqftL
+- **upperBody**: https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO3y8pQ6GBg8iqe9pP2JrHjwd1nfKtVSQskI0v OU https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOW3fJmqZe4yoUcwvRPQa8kmFprzNiC30hqftL
+- **lowerBody**: https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj OU https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
+- **cardio**: Use imagens de upperBody
+- **abdomen**: Use imagens de lowerBody
 
-**Dias majoritariamente inferiores** (pernas, glúteos, quadríceps, posterior, panturrilha, legs, lower):
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj
-- https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
-
-Alterne entre as duas opções de cada categoria para variar. Dias de descanso usam imagem de superior.`;
+Escolha a categoria baseada no foco muscular do dia. Dias de descanso usam imagem de upperBody. SEMPRE forneça um coverImageUrl válido (nunca null ou vazio).`;
 
 const aiRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -112,7 +109,10 @@ const aiRoutes = (app: FastifyInstance) => {
       }
 
       await setStreamActive(userId).catch((error) => {
-        app.log.warn("Redis unavailable, proceeding without locking stream:", error);
+        app.log.warn(
+          "Redis unavailable, proceeding without locking stream:",
+          error,
+        );
       });
 
       const result = streamText({
@@ -137,6 +137,9 @@ const aiRoutes = (app: FastifyInstance) => {
                   name: z.string().max(100),
                   isRestDay: z.boolean(),
                   weekDay: z.enum(Object.values(weekDays)),
+                  coverImageUrl: z
+                    .url()
+                    .min(1, "coverImageUrl must never be null or empty"),
                   estimatedDurationInSeconds: z.number().min(0),
                   workoutExercises: z.array(
                     z.object({
@@ -164,6 +167,7 @@ const aiRoutes = (app: FastifyInstance) => {
                   name: day.name,
                   isRestDay: day.isRestDay,
                   weekDay: day.weekDay,
+                  coverImageUrl: day.coverImageUrl,
                   estimatedDurationInSeconds: day.estimatedDurationInSeconds,
                   workoutExercises: day.workoutExercises.map((exercise) => ({
                     name: exercise.name,
@@ -209,9 +213,7 @@ const aiRoutes = (app: FastifyInstance) => {
             inputSchema: z.object({}),
             execute: async () => {
               const userRepsoitory = new UserRepository();
-              const getUserDataUseCase = new GetUserDataUseCase(
-                userRepsoitory,
-              );
+              const getUserDataUseCase = new GetUserDataUseCase(userRepsoitory);
 
               const userData = await getUserDataUseCase.execute({
                 userId: session.user.id,

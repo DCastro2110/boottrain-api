@@ -11,6 +11,7 @@ interface InputDTO {
     name: string;
     isRestDay: boolean;
     weekDay: weekDays;
+    coverImageUrl: string;
     estimatedDurationInSeconds: number;
     workoutExercises: {
       name: string;
@@ -50,6 +51,7 @@ export class CreateWorkoutPlanUseCase {
             name: workoutDay.name,
             isRestDay: workoutDay.isRestDay,
             weekDay: workoutDay.weekDay,
+            coverImageUrl: workoutDay.coverImageUrl,
             estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
             workoutExercises: workoutDay.workoutExercises.map(
               (workoutExercise) => ({

@@ -11,7 +11,7 @@ export interface IWorkoutPlan {
     id: string;
     name: string;
     isRestDay: boolean;
-    coverImageUrl: string | null;
+    coverImageUrl: string;
     weekDay: weekDays;
     estimatedDurationInSeconds: number;
     workoutExercises: {
@@ -35,6 +35,7 @@ export interface IWorkoutPlanRepository {
         name: string;
         isRestDay: boolean;
         weekDay: weekDays;
+        coverImageUrl: string;
         estimatedDurationInSeconds: number;
         workoutExercises: {
           name: string;
@@ -62,7 +63,7 @@ export interface IWorkoutPlanRepository {
     weekDay: weekDays;
     estimatedDurationInSeconds: number;
     numberOfExercises: number;
-    coverImageUrl: string | null;
+    coverImageUrl: string;
     workoutExercises: Array<{
       name: string;
       reps: number;
@@ -86,7 +87,7 @@ export interface IWorkoutPlanRepository {
         name: string;
         weekDay: weekDays;
         estimatedDurationInSeconds: number;
-        coverImageUrl: string | null;
+        coverImageUrl: string;
         workoutExercises: {
           name: string;
           reps: number;
