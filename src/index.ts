@@ -154,7 +154,7 @@ app.addHook("onReady", async () => {
 try {
   const port = Number(process.env.PORT) || 8080;
 
-  await app.listen({ port });
+  await app.listen({ port, host: "0.0.0.0" });
 
   app.log.info(`Server listening at http://localhost:${port}`);
 } catch (err) {
