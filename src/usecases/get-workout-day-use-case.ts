@@ -17,6 +17,7 @@ interface OutputDTO {
   numberOfExercises: number;
   coverImageUrl: string | null;
   workoutSessionId: string | null;
+  isConcluded: boolean;
   workoutExercises: Array<{
     name: string;
     reps: number;
@@ -65,6 +66,8 @@ export class GetWorkoutDayUseCase {
       numberOfExercises: workoutDay.numberOfExercises,
       coverImageUrl: workoutDay.coverImageUrl,
       workoutSessionId: openSession?.id ?? null,
+      isConcluded:
+        openSession?.startedAt != null && openSession?.completedAt != null,
       workoutExercises: workoutDay.workoutExercises.map((exercise) => ({
         name: exercise.name,
         reps: exercise.reps,
