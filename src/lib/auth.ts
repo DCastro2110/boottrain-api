@@ -5,6 +5,8 @@ import { openAPI } from "better-auth/plugins";
 
 import prisma from "./db.js";
 
+console.log(process.env.CLIENT_URL);
+
 export const auth = betterAuth({
   baseUrl: process.env.BETTER_AUTH_URL!,
   trustedOrigins: [process.env.CLIENT_URL!],
