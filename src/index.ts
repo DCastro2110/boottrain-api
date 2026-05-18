@@ -16,6 +16,7 @@ import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
 import { registerErrorHandler } from "./lib/error-handler.js";
+import { redis } from "./lib/redis.js";
 import { aiRoutes } from "./routes/ai.route.js";
 import { authRoutes } from "./routes/auth.route.js";
 import { homeInfoRoutes } from "./routes/home-info.route.js";
@@ -134,6 +135,10 @@ app.withTypeProvider<ZodTypeProvider>().route({
   handler: async () => {
     return { message: "Hello, World!" };
   },
+});
+
+app.addHook("onClose", async () => {
+  await redis.quit();
 });
 
 try {

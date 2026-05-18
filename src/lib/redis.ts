@@ -4,6 +4,14 @@ import { RedisError } from "../errors/errors.js";
 
 export const redis = new Redis(process.env.REDIS_URL!);
 
+redis.on("error", (error) => {
+  console.error("🚨 [ioredis] conection error:", error.message);
+});
+
+redis.on("connect", () => {
+  console.log("🔌 [ioredis] Connected to Redis");
+});
+
 export const REDIS_KEYS = {
   AI_STREAM_ACTIVE: "stream:active",
 } as const;
