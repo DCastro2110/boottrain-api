@@ -48,9 +48,11 @@ await app.register(fastifyRateLimit, {
 });
 
 await app.register(fastifyCors, {
-  origin: process.env.CLIENT_URL,
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
+  maxAge: 86400,
 });
 await app.register(fastifySwagger, {
   openapi: {
