@@ -4,7 +4,10 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "tsx --env-file=.env --watch src/index.ts"
+    "dev": "tsx --env-file=.env --watch src/index.ts",
+    "build": "tsc",
+    "prebuild": "rm -rf dist && prisma generate",
+    "start": "node dist/index.js"
   },
   "engines": {
     "node": "24"
