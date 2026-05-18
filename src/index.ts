@@ -45,7 +45,7 @@ await app.register(fastifyRateLimit, {
 });
 
 await app.register(fastifyCors, {
-  origin: "http://localhost:3000",
+  origin: process.env.CLIENT_URL,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 });
@@ -59,7 +59,7 @@ await app.register(fastifySwagger, {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: process.env.API_URL!,
         description: "Local development server",
       },
     ],
