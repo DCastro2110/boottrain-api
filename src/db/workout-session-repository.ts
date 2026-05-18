@@ -143,7 +143,6 @@ export class WorkoutSessionRepository implements IWorkoutSessionRepository {
           gte: startOfWeek,
           lte: endOfWeek,
         },
-        completedAt: null,
       },
     });
 
