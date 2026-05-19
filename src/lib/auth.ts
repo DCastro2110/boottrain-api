@@ -12,11 +12,10 @@ export const auth = betterAuth({
   trustedOrigins: [process.env.CLIENT_URL!],
 
   account: {
-    skipStateCookieCheck: false,
+    skipStateCookieCheck: true,
   },
   advanced: {
     useSecureCookies: true,
-    cookiePrefix: "ba",
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true,
