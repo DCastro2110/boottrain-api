@@ -10,6 +10,35 @@ console.log(process.env.CLIENT_URL);
 export const auth = betterAuth({
   baseUrl: process.env.BETTER_AUTH_URL!,
   trustedOrigins: [process.env.CLIENT_URL!],
+
+  account: {
+    skipStateCookieCheck: false,
+  },
+  advanced: {
+    useSecureCookies: true,
+    cookiePrefix: "ba",
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      partitioned: true,
+    },
+    cookies: {
+      oauth_state: {
+        attributes: {
+          sameSite: "none",
+          secure: true,
+          partitioned: true,
+        },
+      },
+      session_token: {
+        attributes: {
+          sameSite: "none",
+          secure: true,
+          partitioned: true,
+        },
+      },
+    },
+  },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
