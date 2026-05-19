@@ -14,6 +14,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+  },
   rateLimit: {
     customRules: {
       "/sign-in/**": {
