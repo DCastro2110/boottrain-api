@@ -101,14 +101,16 @@ const aiRoutes = (app: FastifyInstance) => {
       }
 
       const userId = session.user.id;
-      const isActive = await isStreamActive(userId).catch(() => false);
+      const isActive = await isStreamActive(app.redis, userId).catch(
+        () => false,
+      );
       if (isActive) {
         throw new StreamInProgressError(
           "Another stream is already in progress for this user. Please wait until it finishes.",
         );
       }
 
-      await setStreamActive(userId).catch((error) => {
+      await setStreamActive(app.redis, userId).catch((error) => {
         app.log.warn(
           "Redis unavailable, proceeding without locking stream:",
           error,
@@ -271,11 +273,11 @@ const aiRoutes = (app: FastifyInstance) => {
 
       const response = result.toUIMessageStreamResponse({
         onError: () => {
-          clearStreamActive(userId).catch(console.error);
+          clearStreamActive(app.redis, userId).catch(console.error);
           return "Um erro ocorreu ao processar sua solicitação. Por favor, tente novamente.";
         },
         onFinish: () => {
-          clearStreamActive(userId).catch(console.error);
+          clearStreamActive(app.redis, userId).catch(console.error);
         },
       });
 

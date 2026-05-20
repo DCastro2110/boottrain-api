@@ -2,6 +2,7 @@ import { error } from "node:console";
 
 import fastifyCors from "@fastify/cors";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyRedis from "@fastify/redis";
 import { fastifySwagger } from "@fastify/swagger";
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import { fromNodeHeaders } from "better-auth/node";
@@ -12,12 +13,10 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { Redis } from "ioredis";
 import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
 import { registerErrorHandler } from "./lib/error-handler.js";
-import { getRedisClient } from "./lib/redis.js";
 import { aiRoutes } from "./routes/ai.route.js";
 import { authRoutes } from "./routes/auth.route.js";
 import { homeInfoRoutes } from "./routes/home-info.route.js";
@@ -25,7 +24,6 @@ import { statsRoutes } from "./routes/stats.route.js";
 import { userRoutes } from "./routes/user.route.js";
 import { workoutPlanRoutes } from "./routes/workout-plan.route.js";
 
-let redisInstance: Redis | null = null;
 const app = fastify({
   logger: true,
 });
@@ -54,6 +52,16 @@ await app.register(fastifyCors, {
   credentials: true,
   maxAge: 86400,
 });
+
+await app.register(fastifyRedis, {
+  url: process.env.REDIS_URL,
+  closeClient: true,
+  retryStrategy(times) {
+    return Math.min(times * 50, 2000);
+  },
+  maxRetriesPerRequest: null,
+});
+
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -139,18 +147,6 @@ app.withTypeProvider<ZodTypeProvider>().route({
   handler: async () => {
     return { message: "Hello, World!" };
   },
-});
-
-app.addHook("onClose", async () => {
-  await redisInstance?.quit();
-});
-app.addHook("onReady", async () => {
-  if (redisInstance) {
-    console.log("Redis connection already established.");
-    return;
-  }
-
-  redisInstance = getRedisClient();
 });
 
 try {
