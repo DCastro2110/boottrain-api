@@ -74,6 +74,7 @@ registerErrorHandler(app);
 await app.register(fastifyRedis, {
   url: process.env.REDIS_URL,
   closeClient: true,
+  lazyConnect: true,
   retryStrategy(times) {
     return Math.min(times * 50, 2000);
   },
