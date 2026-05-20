@@ -32,6 +32,23 @@ const app = fastify({
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+app.setNotFoundHandler(
+  {
+    preHandler: app.rateLimit({
+      max: 4,
+      timeWindow: "1 minute",
+    }),
+  },
+  function (request, reply) {
+    reply.code(404).send({
+      error: "Not Found",
+      code: "NOT_FOUND",
+    });
+  },
+);
+
+registerErrorHandler(app);
+
 await app.register(fastifyRateLimit, {
   max: 60,
   timeWindow: "1 minute",
@@ -98,23 +115,6 @@ await app.register(fastifyApiReference, {
     ],
   },
 });
-
-app.setNotFoundHandler(
-  {
-    preHandler: app.rateLimit({
-      max: 4,
-      timeWindow: "1 minute",
-    }),
-  },
-  function (request, reply) {
-    reply.code(404).send({
-      error: "Not Found",
-      code: "NOT_FOUND",
-    });
-  },
-);
-
-registerErrorHandler(app);
 
 await app.register(authRoutes);
 await app.register(homeInfoRoutes, { prefix: "home-info" });
