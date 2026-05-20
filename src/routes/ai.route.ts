@@ -49,6 +49,7 @@ Quando o usuário quiser criar um plano de treino:
 - O plano DEVE ter exatamente 7 dias (MONDAY a SUNDAY).
 - Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
 - Chame a tool \`createWorkoutPlan\` para salvar o plano.
+- **MUITO IMPORTANTE**: Após o retorno de sucesso da tool \`createWorkoutPlan\`, você DEVE responder ao usuário com a mensagem exata \`plan created with success\` no final de sua resposta de texto para sinalizar ao front-end que o treino foi criado com sucesso. Não adicione nada depois desta frase.
 
 ### Divisões de Treino (Splits)
 
@@ -180,6 +181,8 @@ const aiRoutes = (app: FastifyInstance) => {
                   })),
                 })),
               });
+
+              return "Workout plan created successfully. You must now reply to the user and end your response with the exact text: 'Plano criado com sucesso.'.";
             },
           }),
           getWorkoutPlans: tool({
