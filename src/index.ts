@@ -32,6 +32,28 @@ const app = fastify({
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+await app.register(fastifyCors, {
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+  maxAge: 86400,
+});
+
+await app.register(fastifyRateLimit, {
+  max: 60,
+  timeWindow: "1 minute",
+  ban: 3,
+  onBanReach(req, key) {
+    error(`IP ${key} has been banned for exceeding the rate limit.`);
+    const headers = fromNodeHeaders(req.headers);
+
+    auth.api.revokeSessions({ headers: headers }).catch((err) => {
+      error(`Failed to revoke sessions for IP ${key}:`, err);
+    });
+  },
+});
+
 app.setNotFoundHandler(
   {
     preHandler: app.rateLimit({
@@ -48,28 +70,6 @@ app.setNotFoundHandler(
 );
 
 registerErrorHandler(app);
-
-await app.register(fastifyRateLimit, {
-  max: 60,
-  timeWindow: "1 minute",
-  ban: 3,
-  onBanReach(req, key) {
-    error(`IP ${key} has been banned for exceeding the rate limit.`);
-    const headers = fromNodeHeaders(req.headers);
-
-    auth.api.revokeSessions({ headers: headers }).catch((err) => {
-      error(`Failed to revoke sessions for IP ${key}:`, err);
-    });
-  },
-});
-
-await app.register(fastifyCors, {
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  maxAge: 86400,
-});
 
 await app.register(fastifyRedis, {
   url: process.env.REDIS_URL,
