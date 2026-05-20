@@ -78,7 +78,7 @@ await app.register(fastifyRedis, {
   retryStrategy(times) {
     return Math.min(times * 50, 2000);
   },
-  maxRetriesPerRequest: null,
+  maxRetriesPerRequest: 3,
 });
 
 await app.register(fastifySwagger, {
