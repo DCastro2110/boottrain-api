@@ -26,6 +26,7 @@ import { workoutPlanRoutes } from "./routes/workout-plan.route.js";
 
 const app = fastify({
   logger: true,
+  handlerTimeout: 5000,
 });
 
 app.setValidatorCompiler(validatorCompiler);
