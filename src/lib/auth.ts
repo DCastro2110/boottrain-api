@@ -17,9 +17,10 @@ export const auth = betterAuth({
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
-      domain: process.env.COOKIE_DOMAIN || "localhost",
+      domain: process.env.COOKIE_DOMAIN!,
     },
   },
+
   rateLimit: {
     customRules: {
       "/sign-in/**": {
